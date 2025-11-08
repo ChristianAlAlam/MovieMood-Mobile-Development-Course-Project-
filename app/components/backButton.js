@@ -1,5 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-
+import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 /**
  * BackButton Component
  * 
@@ -10,7 +10,7 @@ import { StyleSheet, Text, TouchableOpacity } from 'react-native';
  * @param {function} onPress - Function to call when button is pressed (usually navigation.goBack())
  * @param {string} text - Text to display next to arrow (default: "Back")
  */
-const BackButton = ({ onPress, text = 'Back' }) => {
+const BackButton = ({ onPress }) => {
   return (
     <TouchableOpacity
       style={styles.container}
@@ -18,10 +18,7 @@ const BackButton = ({ onPress, text = 'Back' }) => {
       activeOpacity={0.7} // Slight opacity change on press
     >
       {/* Arrow Icon */}
-      <Text style={styles.arrow}>←</Text>
-      
-      {/* Back Text */}
-      <Text style={styles.text}>{text}</Text>
+      <Ionicons name="chevron-back" size={26} color="#fff" />
     </TouchableOpacity>
   );
 };
@@ -39,14 +36,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: '#FFFFFF', // Silver
     marginRight: 8, // Space between arrow and text
-  },
-
-  // Text styling
-  text: {
-    fontSize: 18,
-    color: '#FFFFFF', // Silver
-    fontFamily: 'Roboto',
-    letterSpacing: 1, // Slight spacing
   },
 });
 

@@ -4,23 +4,11 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1F3F',
   },
 
   gradient: {
     flex: 1,
-    ...StyleSheet.absoluteFill,
-  },
-
-  spotlight: {
-    position: 'absolute',
-    top: -100,
-    left: width / 2 - 200,
-    width: 400,
-    height: 400,
-    borderRadius: 200,
-    backgroundColor: 'rgba(232, 244, 248, 0.08)',
-    opacity: 0.6,
+    ...StyleSheet.absoluteFill
   },
 
   scrollView: {
@@ -31,40 +19,157 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
 
-  greetingSection: {
+  // Header
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    marginBottom: 20,
+    paddingTop: 10,
+    paddingBottom: 20,
   },
 
-  greeting: {
-    fontSize: 28,
+  headerButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  profileAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+
+  profileAvatarPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(212, 175, 55, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Section
+  section: {
+    marginBottom: 30,
+  },
+
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 6,
-  },
-
-  subGreeting: {
-    fontSize: 14,
-    color: '#C0C0C0',
     letterSpacing: 0.5,
   },
 
-  statsRow: {
+  // Horizontal Scroll
+  horizontalScrollContent: {
+    paddingLeft: 20,
+    paddingRight: 10,
+  },
+
+  // Trending Card
+  trendingCard: {
+    width: 140,
+    marginRight: 12,
+    position: 'relative',
+  },
+
+  trendingPoster: {
+    width: '100%',
+    height: 210,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+
+  ratingBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
     flexDirection: 'row',
-    paddingHorizontal: 15,
-    marginBottom: 10,
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
   },
 
-  moviesScrollView: {
-    marginBottom: 20,
+  ratingText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 
-  moviesScrollContent: {
-    paddingHorizontal: 20,
+  // Continue Watching Card
+  continueWatchingCard: {
+    marginHorizontal: 20,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    position: 'relative',
   },
 
+  continueWatchingPoster: {
+    width: '100%',
+    height: 200,
+  },
+
+  continueWatchingOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+    justifyContent: 'flex-end',
+  },
+
+  continueWatchingInfo: {
+    padding: 16,
+  },
+
+  continueTimeLeft: {
+    fontSize: 13,
+    color: '#FFFFFF',
+    opacity: 0.8,
+    marginBottom: 4,
+  },
+
+  continueTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+
+  // Progress Bar
+  progressBarContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#D4AF37',
+  },
+
+  // Bottom Spacing
   bottomSpacer: {
-    height: 20,
+    height: 30,
   },
 });
 

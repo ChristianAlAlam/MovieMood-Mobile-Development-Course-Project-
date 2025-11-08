@@ -1,9 +1,12 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import HomeTabs from './screens/homeTabs';
 import LandingScreen from './screens/landingScreen';
 import LoginScreen from './screens/loginScreen';
+import MovieDetailsScreen from './screens/movieDetailsScreen';
+import ProfileScreen from './screens/profileScreen';
 import RegisterScreen from './screens/registerScreen';
 import { isLoggedIn } from './services/authService';
 
@@ -32,13 +35,19 @@ export default function App() {
   }
 
   return (
+    <SafeAreaProvider>
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Landing" component={LandingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="HomeTab" component={HomeTabs}>
-        {/* {props => <HomeTabs {...props} onLogoutComplete={checkAuthStatus} />} */}
-      </Stack.Screen>
+      <Stack.Screen name="HomeTab" component={HomeTabs}/>
+      <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen
+        name="MovieDetails"
+        component={MovieDetailsScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
+    </SafeAreaProvider>
   );
 }

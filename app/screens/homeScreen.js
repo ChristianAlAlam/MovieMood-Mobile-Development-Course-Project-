@@ -1,131 +1,116 @@
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import {
+  Image,
   RefreshControl,
   ScrollView,
   StatusBar,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-// Import reusable components
-import Header from '../components/header';
-import MovieCard from '../components/movieCard';
-import SectionHeader from '../components/sectionHeader';
-import StatsCard from '../components/statsCard';
 
 // Import styles
 import styles from '../styles/homeStyles';
 
 // Import auth service
+import Header from '../components/header';
 import { getCurrentUser } from '../services/authService';
 
 /**
- * HomeScreen - Main dashboard of the app
+ * HomeScreen - Netflix-style Movie Dashboard
  * 
- * Shows:
- * - User greeting
- * - Quick stats (total movies, favorites, etc.)
- * - Recent movies (horizontal scroll)
- * - Favorite movies
- * - Quick actions
- * 
- * @param {object} navigation - React Navigation object
+ * Features:
+ * - Top trending movies (horizontal scroll with posters)
+ * - Continue watching section
+ * - New releases
+ * - Minimal header with profile and menu
  */
 export default function HomeScreen({ navigation }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  
+
   // Mock data - will be replaced with real data from AsyncStorage
-  const [stats, setStats] = useState({
-    totalMovies: 12,
-    favorites: 5,
-    avgRating: 4.2,
-    thisWeek: 3,
-  });
+  const trendingMovies = [
+    { 
+      id: '1', 
+      title: 'The Citadel', 
+      poster: 'https://image.tmdb.org/t/p/w500/qVygtf2vU15L2yKS4Ke44U4oMdD.jpg',
+      rating: 4.5 
+    },
+    { 
+      id: '2', 
+      title: 'Love Again', 
+      poster: 'https://image.tmdb.org/t/p/w500/yQ7Ajbr3Wd6VJtrthANyUaqZq3B.jpg',
+      rating: 4.0 
+    },
+    { 
+      id: '3', 
+      title: 'Avatar 2', 
+      poster: 'https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg',
+      rating: 4.8 
+    },
+  ];
 
-  // Mock recent movies - will be replaced with real data
-  const [recentMovies, setRecentMovies] = useState([
-    { id: '1', title: 'Inception', rating: 5, genre: 'Sci-Fi', poster: '🎬' },
-    { id: '2', title: 'The Matrix', rating: 4.5, genre: 'Action', poster: '🎭' },
-    { id: '3', title: 'Interstellar', rating: 5, genre: 'Sci-Fi', poster: '🚀' },
-    { id: '4', title: 'The Dark Knight', rating: 4.8, genre: 'Action', poster: '🦇' },
-  ]);
+  const continueWatching = {
+    id: '4',
+    title: 'Mission: Impossible - The Final Reckoning',
+    poster: 'https://images.ui8.net/uploads/frame-59_1699887134739.jpg',
+    progress: 0.6, // 60% watched
+    timeLeft: '50 min left',
+  };
 
-  // Load user data and movies on mount
+  const newReleases = [
+    { 
+      id: '5', 
+      title: 'Oppenheimer', 
+      poster: 'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',
+      rating: 5.0 
+    },
+    { 
+      id: '6', 
+      title: 'Barbie', 
+      poster: 'https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg',
+      rating: 4.3 
+    },
+  ];
+
   useEffect(() => {
     loadData();
   }, []);
 
-  /**
-   * Load user data and movie statistics
-   */
   const loadData = async () => {
     try {
-      // Get current user
       const userData = await getCurrentUser();
       setUser(userData);
-
-      // TODO: Load movies from AsyncStorage
-      // const movies = await getMovies();
-      // Calculate stats from movies
-      // Update state
-
-      setLoading(false);
     } catch (error) {
       console.error('Error loading data:', error);
-      setLoading(false);
     }
   };
 
-  /**
-   * Handle pull-to-refresh
-   */
   const onRefresh = async () => {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
   };
 
-  /**
-   * Navigate to movie details
-   */
   const handleMoviePress = (movie) => {
-    // TODO: Navigate to movie details screen
     console.log('Movie pressed:', movie.title);
-    // navigation.navigate('MovieDetails', { movieId: movie.id });
-  };
-
-  /**
-   * Navigate to all movies
-   */
-  const handleSeeAllMovies = () => {
-    navigation.navigate('Movies');
-  };
-
-  /**
-   * Navigate to favorites
-   */
-  const handleSeeAllFavorites = () => {
-    navigation.navigate('Favs');
+    // TODO: Navigate to movie details
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
-      <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
       {/* Background Gradient */}
       <LinearGradient
-        colors={['#0A0A0F', '#1A1A24', '#0A0A0F']}
-        locations={[0, 0.5, 1]}
+        colors={['#0A0A0F', '#1A1A24']}
+        location={[0, 1]}
         style={styles.gradient}
       >
-        {/* Spotlight Effect */}
-        <View style={styles.spotlight} />
-
-        {/* Scrollable Content */}
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -138,96 +123,122 @@ export default function HomeScreen({ navigation }) {
             />
           }
         >
-          {/* Header Component */}
-          <Header
-            userName={user?.name}
+          <Header 
             userAvatar={user?.avatar}
-            onProfilePress={() => navigation.navigate('Profile')}
+            onProfilePress={() => navigation.navigate("Profile")}
+            mode="simple"
+            title="Home"
           />
 
-          {/* Greeting Section */}
-          <View style={styles.greetingSection}>
-            <Text style={styles.greeting}>Hello, {user?.name || 'User'}! 👋</Text>
-            <Text style={styles.subGreeting}>
-              You have {stats.totalMovies} movies in your collection
-            </Text>
+          {/* Top Trending Movies */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Your Favorites</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Favorite')}>
+                <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalScrollContent}
+            >
+              {trendingMovies.map((movie) => (
+                <TouchableOpacity
+                  key={movie.id}
+                  style={styles.trendingCard}
+                  onPress={() => handleMoviePress(movie)}
+                  activeOpacity={0.8}
+                >
+                  <Image
+                    source={{ uri: movie.poster }}
+                    style={styles.trendingPoster}
+                    resizeMode="cover"
+                  />
+                  {/* Rating Badge */}
+                  <View style={styles.ratingBadge}>
+                    <Ionicons name="star" size={12} color="#FFD700" />
+                    <Text style={styles.ratingText}>{movie.rating}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
 
-          {/* Stats Cards Row */}
-          <View style={styles.statsRow}>
-            <StatsCard
-              icon="🎬"
-              value={stats.totalMovies}
-              label="Movies"
-              color="#D4AF37"
-            />
-            <StatsCard
-              icon="❤️"
-              value={stats.favorites}
-              label="Favorites"
-              color="#FF6B9D"
-            />
-          </View>
+          {/* Continue Watching */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Continue watching</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Continue')}>
+                <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.statsRow}>
-            <StatsCard
-              icon="⭐"
-              value={stats.avgRating.toFixed(1)}
-              label="Avg Rating"
-              color="#FFD700"
-            />
-            <StatsCard
-              icon="📅"
-              value={stats.thisWeek}
-              label="This Week"
-              color="#4ECDC4"
-            />
-          </View>
-
-          {/* Recent Movies Section */}
-          <SectionHeader
-            title="Recent Movies"
-            icon="🎬"
-            onSeeAll={handleSeeAllMovies}
-          />
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.moviesScrollView}
-            contentContainerStyle={styles.moviesScrollContent}
-          >
-            {recentMovies.map((movie) => (
-              <MovieCard
-                key={movie.id}
-                movie={movie}
-                onPress={() => handleMoviePress(movie)}
+            <TouchableOpacity
+              style={styles.continueWatchingCard}
+              onPress={() => handleMoviePress(continueWatching)}
+              activeOpacity={0.8}
+            >
+              <Image
+                source={{ uri: continueWatching.poster }}
+                style={styles.continueWatchingPoster}
+                resizeMode="cover"
               />
-            ))}
-          </ScrollView>
+              
+              {/* Gradient Overlay */}
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.9)']}
+                style={styles.continueWatchingOverlay}
+              >
+                <View style={styles.continueWatchingInfo}>
+                  <Text style={styles.continueTimeLeft}>{continueWatching.timeLeft}</Text>
+                  <Text style={styles.continueTitle}>{continueWatching.title}</Text>
+                </View>
+              </LinearGradient>
 
-          {/* Favorites Section */}
-          <SectionHeader
-            title="Your Favorites"
-            icon="❤️"
-            onSeeAll={handleSeeAllFavorites}
-          />
+              {/* Progress Bar */}
+              <View style={styles.progressBarContainer}>
+                <View style={[styles.progressBar, { width: `${continueWatching.progress * 100}%` }]} />
+              </View>
+            </TouchableOpacity>
+          </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.moviesScrollView}
-            contentContainerStyle={styles.moviesScrollContent}
-          >
-            {recentMovies.slice(0, 2).map((movie) => (
-              <MovieCard
-                key={movie.id}
-                movie={movie}
-                onPress={() => handleMoviePress(movie)}
-                isFavorite
-              />
-            ))}
-          </ScrollView>
+          {/* New Released */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Your Watchlist</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Watchlist')}>
+                <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalScrollContent}
+            >
+              {newReleases.map((movie) => (
+                <TouchableOpacity
+                  key={movie.id}
+                  style={styles.trendingCard}
+                  onPress={() => handleMoviePress(movie)}
+                  activeOpacity={0.8}
+                >
+                  <Image
+                    source={{ uri: movie.poster }}
+                    style={styles.trendingPoster}
+                    resizeMode="cover"
+                  />
+                  {/* Rating Badge */}
+                  <View style={styles.ratingBadge}>
+                    <Ionicons name="star" size={12} color="#FFD700" />
+                    <Text style={styles.ratingText}>{movie.rating}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
           {/* Bottom Spacing for Tab Bar */}
           <View style={styles.bottomSpacer} />

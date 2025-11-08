@@ -15,13 +15,16 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const Header = ({
   userName,
   userAvatar,
+  title,
+  mode = "default", // "default" shows MovieMood title & icons, "simple" shows screen title only
   onProfilePress,
   onNotificationPress,
   onSettingsPress,
 }) => {
   return (
     <View style={styles.container}>
-      {/* Left Side - Profile Avatar */}
+      
+      {/* Left: Avatar */}
       <TouchableOpacity
         style={styles.avatarContainer}
         onPress={onProfilePress}
@@ -36,42 +39,39 @@ const Header = ({
         )}
       </TouchableOpacity>
 
-      {/* Center - App Logo/Title */}
+      {/* Center (Switch between logo title and screen title) */}
       <View style={styles.centerContainer}>
-        <Text style={styles.appTitle}>MovieMood</Text>
+        <Text style={styles.appTitle}>
+          {mode === "simple" ? title : "MovieMood"}
+        </Text>
       </View>
 
-      {/* Right Side - Action Icons */}
-      <View style={styles.actionsContainer}>
-        {/* Notification Icon (Optional) */}
-        {onNotificationPress && (
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={onNotificationPress}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="notifications-outline" size={24} color="#C0C0C0" />
-            {/* Notification Badge */}
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>3</Text>
-            </View>
-          </TouchableOpacity>
-        )}
+      {/* Right Section */}
+      {mode === "default" ? (
+        <View style={styles.actionsContainer}>
+          {onNotificationPress && (
+            <TouchableOpacity style={styles.iconButton} onPress={onNotificationPress}>
+              <Ionicons name="notifications-outline" size={24} color="#C0C0C0" />
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>3</Text>
+              </View>
+            </TouchableOpacity>
+          )}
 
-        {/* Settings Icon (Optional) */}
-        {onSettingsPress && (
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={onSettingsPress}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="settings-outline" size={24} color="#C0C0C0" />
-          </TouchableOpacity>
-        )}
-      </View>
+          {onSettingsPress && (
+            <TouchableOpacity style={styles.iconButton} onPress={onSettingsPress}>
+              <Ionicons name="settings-outline" size={24} color="#C0C0C0" />
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        // Fill empty space to keep title centered
+        <View style={{ width: 45 }} />
+      )}
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -85,12 +85,12 @@ const styles = StyleSheet.create({
 
   // Avatar Section
   avatarContainer: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#D4AF37',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
   },
 
   avatar: {

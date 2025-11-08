@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 /**
  * MovieCard Component
@@ -61,7 +61,11 @@ const MovieCard = ({ movie, onPress, isFavorite = false }) => {
       <BlurView intensity={30} style={styles.card}>
         {/* Poster Section */}
         <View style={styles.posterContainer}>
-          <Text style={styles.poster}>{movie.poster}</Text>
+          <Image
+            source={{ uri: movie.poster }}
+            style={styles.posterImage}
+            resizeMode="cover"
+          />
           
           {/* Favorite Badge */}
           {isFavorite && (
@@ -100,7 +104,8 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    width: 160,
+    width: '100%',
+    maxWidth: 160,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(192, 192, 192, 0.2)',
@@ -119,6 +124,12 @@ const styles = StyleSheet.create({
 
   poster: {
     fontSize: 80,
+  },
+
+  posterImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
   },
 
   favoriteBadge: {

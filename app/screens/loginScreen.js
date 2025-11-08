@@ -82,7 +82,7 @@ export default function LoginScreen ({ navigation }) {
       {/* Background Gradient - Navy theme */}
       <LinearGradient
         colors={['#000000', '#090909']}
-        locations={[0, 0.5, 1]}
+        locations={[0, 1]}
         style={styles.gradient}
       >
         

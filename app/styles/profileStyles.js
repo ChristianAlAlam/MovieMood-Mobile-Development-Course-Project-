@@ -4,12 +4,10 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1F3F',
   },
 
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0B1F3F',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -17,17 +15,6 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
     ...StyleSheet.absoluteFill,
-  },
-
-  spotlight: {
-    position: 'absolute',
-    top: -100,
-    left: width / 2 - 200,
-    width: 400,
-    height: 400,
-    borderRadius: 200,
-    backgroundColor: 'rgba(232, 244, 248, 0.08)',
-    opacity: 0.6,
   },
 
   scrollView: {
@@ -38,196 +25,189 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
 
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
+  topBar: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingHorizontal: 20,
+  paddingVertical: 15,
+},
+topBarTitle: {
+  color: '#fff',
+  fontSize: 18,
+  fontWeight: '600',
+},
 
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    letterSpacing: 1,
-  },
+profileCenter: {
+  alignItems: 'center',
+  marginTop: 20,
+  marginBottom: 30,
+},
+profileAvatar: {
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+},
+profileAvatarPlaceholder: {
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+  backgroundColor: 'rgba(255,255,255,0.2)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+editText: {
+  color: '#C0C0C0',
+  marginTop: 8,
+  marginBottom: 2,
+},
+profileName: {
+  color: '#fff',
+  fontSize: 18,
+  marginBottom: 15,
+},
+addProfileBtn: {
+  paddingVertical: 8,
+  paddingHorizontal: 20,
+  borderRadius: 20,
+  borderColor: '#fff',
+  borderWidth: 1,
+},
+addProfileText: {
+  color: '#fff',
+  fontSize: 14,
+},
 
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
+menuList: {
+  marginTop: 10,
+  paddingHorizontal: 20,
+},
+menuItem: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingVertical: 18,
+  borderBottomColor: 'rgba(255,255,255,0.1)',
+  borderBottomWidth: 1,
+},
+menuText: {
+  flex: 1,
+  marginLeft: 15,
+  color: '#fff',
+  fontSize: 15,
+},
+menuRightText: {
+  color: '#a18cd1',
+  marginRight: 10,
+  fontSize: 14,
+},
 
-  avatarContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    overflow: 'hidden',
-    borderWidth: 3,
-    borderColor: '#D4AF37',
-    position: 'relative',
-  },
+// Add these to your existing profileStyles.js
 
-  avatar: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
+// Edit Modal
+modalOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  justifyContent: 'flex-end',
+},
 
-  avatarPlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(27, 47, 79, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+modalContent: {
+  backgroundColor: '#1A1A24',
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+  padding: 20,
+  maxHeight: '80%',
+},
 
-  cameraIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#D4AF37',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#0B1F3F',
-  },
+modalHeader: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: 30,
+},
 
-  avatarHint: {
-    marginTop: 10,
-    fontSize: 12,
-    color: '#C0C0C0',
-    fontStyle: 'italic',
-  },
+modalTitle: {
+  fontSize: 24,
+  fontWeight: '600',
+  color: '#fff',
+},
 
-  infoSection: {
-    paddingHorizontal: 20,
-    marginBottom: 30,
-  },
+modalAvatarSection: {
+  alignItems: 'center',
+  marginBottom: 30,
+},
 
-  infoCard: {
-    backgroundColor: 'rgba(27, 47, 79, 0.5)',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(192, 192, 192, 0.2)',
-  },
+modalAvatar: {
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+  marginBottom: 12,
+},
 
-  label: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#D4AF37',
-    letterSpacing: 2,
-    marginBottom: 8,
-  },
+modalAvatarPlaceholder: {
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginBottom: 12,
+},
 
-  value: {
-    fontSize: 18,
-    color: '#FFFFFF',
-    fontWeight: '400',
-  },
+changePhotoText: {
+  fontSize: 14,
+  color: '#8B5CF6',
+  fontWeight: '500',
+},
 
-  input: {
-    fontSize: 18,
-    color: '#FFFFFF',
-    fontWeight: '400',
-    borderBottomWidth: 1,
-    borderBottomColor: '#D4AF37',
-    paddingBottom: 5,
-  },
+inputGroup: {
+  marginBottom: 20,
+},
 
-  hint: {
-    fontSize: 11,
-    color: '#C0C0C0',
-    marginTop: 5,
-    fontStyle: 'italic',
-  },
+inputLabel: {
+  fontSize: 11,
+  fontWeight: '600',
+  color: '#D4AF37',
+  letterSpacing: 2,
+  marginBottom: 8,
+},
 
-  actionsSection: {
-    paddingHorizontal: 20,
-  },
+input: {
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  borderRadius: 12,
+  padding: 15,
+  fontSize: 16,
+  color: '#fff',
+  borderWidth: 1,
+  borderColor: 'rgba(255, 255, 255, 0.1)',
+},
 
-  editButton: {
-    marginBottom: 15,
-    shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 10,
-  },
+inputReadOnly: {
+  fontSize: 16,
+  color: 'rgba(255, 255, 255, 0.6)',
+  padding: 15,
+},
 
-  saveButton: {
-    marginBottom: 15,
-    shadowColor: '#4ECDC4',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 10,
-  },
+inputHint: {
+  fontSize: 12,
+  color: 'rgba(255, 255, 255, 0.4)',
+  marginTop: 6,
+  fontStyle: 'italic',
+},
 
-  buttonGradient: {
-    height: 56,
-    borderRadius: 28,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
-  },
+saveButton: {
+  backgroundColor: '#fff',
+  paddingVertical: 16,
+  borderRadius: 25,
+  alignItems: 'center',
+  marginTop: 20,
+},
 
-  buttonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    letterSpacing: 1,
-  },
+saveButtonText: {
+  fontSize: 16,
+  fontWeight: '600',
+  color: '#000',
+},
 
-  editButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#0B1F3F',
-    letterSpacing: 1,
-  },
-
-  cancelButton: {
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(192, 192, 192, 0.3)',
-  },
-
-  cancelButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#C0C0C0',
-    letterSpacing: 1,
-  },
-
-  logoutButton: {
-    height: 56,
-    borderRadius: 28,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: 'rgba(255, 107, 107, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 107, 107, 0.3)',
-  },
-
-  logoutButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FF6B6B',
-    letterSpacing: 1,
-  },
-
-  bottomSpacer: {
-    height: 20,
-  },
 });
 
 export default styles;

@@ -29,24 +29,16 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
     },
 
-    titleContainer: {
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-    },
-
-    titleTop: {
+    title: {
         fontSize: 56,
-        fontWeight: '300', //thin, elegant
         fontFamily: 'Roboto',
         color: '#FFFFFF',
     },
 
     subtitle: {
-        fontSize: 10,
-        fontWeight: '400',
-        fontFamily: 'Inter_18pt-Regular',
-        color: '#D4AF37', // Gold
-        letterSpacing: 4,
+        fontSize: 14,
+        fontFamily: 'Roboto',
+        color: '#FFFFFF',
         opacity: 0.9,
     },
 
@@ -56,7 +48,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-end',
         gap: 20, //space between buttons
-        paddingBottom: 40, //space from bottom of screen
+        paddingBottom: 10, //space from bottom of screen
         width: '100%',
     },
 
@@ -75,7 +67,7 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 14,
     fontFamily: 'Inter-18pt-SemiBold',
-    color: '#C0C0C0', // Grey text
+    color: '#7d7d7dff',
     textDecorationLine: 'underline',
   },
 

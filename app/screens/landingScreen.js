@@ -127,12 +127,6 @@ export default function LandingScreen({ navigation }) {
         ).start();
     }, []);
 
-    // Convert animated values to actual movement
-    const cardTranslateY = cardFloatAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [-10, 10], // Moves 10px up and down
-    });
-
     if (!fontsLoaded) return null;
 
     // Function to handle "Get Started" button press
@@ -177,17 +171,16 @@ export default function LandingScreen({ navigation }) {
 
                 {/* Hero Section - contains the app title with gradient text */}
                 <Animated.View 
-                        style={[
-                        styles.heroSection,
-                        {
-                            opacity: fadeAnim,
-                            transform: [{ translateY: titleSlideAnim }],
-                        },
-                        ]}
-                    >
-                    <View style={styles.titleContainer}>
-                        <Text style={styles.titleTop}>MOVIEMOOD</Text>
-                    </View>
+                    style={[
+                    styles.heroSection,
+                    {
+                        opacity: fadeAnim,
+                        transform: [{ translateY: titleSlideAnim }],
+                    },
+                    ]}
+                >
+                        <Text style={styles.title}>MOVIEMOOD</Text>
+                        <Text style={styles.subtitle}>Start Watching Movies for Every Mood</Text>
                 </Animated.View>
                 
                 {/*Call to Action Buttons*/}
@@ -200,15 +193,10 @@ export default function LandingScreen({ navigation }) {
                     ]}
                 >
                     {/* Primary Button - "Get Started"*/}
-                    <TouchableOpacity
-                        activeOpacity={0.8}
+                    <CustomButton
+                        title="BEGIN YOUR COLLECTION"
                         onPress={handleGetStarted}
-                        style={styles.buttonWrapper}
-                    >
-                        <CustomButton
-                            title="BEGIN YOUR COLLECTION"
-                        />
-                    </TouchableOpacity>
+                    />
 
                     {/* Secondary Button - "Already a Member"*/}
                     <TouchableOpacity

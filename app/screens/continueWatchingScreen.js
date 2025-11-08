@@ -12,81 +12,91 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import styles from '../styles/favoritesStyles';
+import styles from '../styles/continueWatchingStyles';
 
-import { getFavoriteMovies, toggleFavorite } from '../services/movieService';
+import { getMovies } from '../services/movieService';
 
 /**
- * FavoritesScreen - Display all favorite movies with Search
+ * ContinueWatchingScreen - Shows all incomplete movies
+ * 
+ * Features:
+ * - Search incomplete movies
+ * - Filter movies with watchProgress < 1
+ * - Show progress bar and time left
+ * - Navigate to movie details
  */
-export default function FavoritesScreen({ navigation }) {
-  const [allFavorites, setAllFavorites] = useState([]);
-  const [filteredFavorites, setFilteredFavorites] = useState([]);
+export default function ContinueWatchingScreen({ navigation }) {
+  const [allInProgress, setAllInProgress] = useState([]);
+  const [filteredMovies, setFilteredMovies] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadFavorites();
+    loadInProgressMovies();
   }, []);
 
   // Reload when screen comes into focus
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      loadFavorites();
+      loadInProgressMovies();
     });
     return unsubscribe;
   }, [navigation]);
 
-  const loadFavorites = async () => {
+  const loadInProgressMovies = async () => {
     try {
-      const favMovies = await getFavoriteMovies();
-      setAllFavorites(favMovies);
-      setFilteredFavorites(favMovies);
+      const allMovies = await getMovies();
+      // Filter movies that are NOT completed
+      const inProgress = allMovies.filter((m) => !m.isCompleted);
+      setAllInProgress(inProgress);
+      setFilteredMovies(inProgress);
       setLoading(false);
     } catch (error) {
-      console.error('Load favorites error:', error);
+      console.error('Load in progress movies error:', error);
       setLoading(false);
     }
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadFavorites();
+    await loadInProgressMovies();
     setSearchQuery('');
     setRefreshing(false);
   };
 
-  const handleSearch = (query) => {
+  const handleSearch = async (query) => {
     setSearchQuery(query);
 
     if (query.trim() === '') {
-      setFilteredFavorites(allFavorites);
+      setFilteredMovies(allInProgress);
       return;
     }
 
+    // Search within incomplete movies
     const lowerQuery = query.toLowerCase();
-    const results = allFavorites.filter(
+    const results = allInProgress.filter(
       (movie) =>
         movie.title.toLowerCase().includes(lowerQuery) ||
         movie.genre.toLowerCase().includes(lowerQuery) ||
-        (movie.comment && movie.comment.toLowerCase().includes(lowerQuery)) ||
-        movie.year.toString().includes(lowerQuery)
+        (movie.comment && movie.comment.toLowerCase().includes(lowerQuery))
     );
-    setFilteredFavorites(results);
+    setFilteredMovies(results);
   };
 
-  const handleToggleFavorite = async (movieId) => {
-    const result = await toggleFavorite(movieId);
-    if (result.success) {
-      // Remove from list if unfavorited
-      if (!result.isFavorite) {
-        const updatedFavorites = allFavorites.filter((m) => m.id !== movieId);
-        setAllFavorites(updatedFavorites);
-        setFilteredFavorites(
-          filteredFavorites.filter((m) => m.id !== movieId)
-        );
-      }
+  const calculateTimeLeft = (duration, progress) => {
+    const match = duration.match(/(\d+)/);
+    if (!match) return 'Time left';
+
+    const totalMinutes = parseInt(match[0]);
+    const remainingMinutes = Math.ceil(totalMinutes * (1 - progress));
+
+    if (remainingMinutes < 60) {
+      return `${remainingMinutes} min left`;
+    } else {
+      const hours = Math.floor(remainingMinutes / 60);
+      const mins = remainingMinutes % 60;
+      return mins > 0 ? `${hours}h ${mins}min left` : `${hours}h left`;
     }
   };
 
@@ -102,24 +112,36 @@ export default function FavoritesScreen({ navigation }) {
     >
       <Image source={{ uri: item.poster }} style={styles.moviePoster} />
 
-      {/* Favorite Badge */}
-      <TouchableOpacity
-        style={styles.favoriteButton}
-        onPress={() => handleToggleFavorite(item.id)}
+      {/* Gradient Overlay */}
+      <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.9)']}
+        style={styles.movieGradient}
       >
-        <Ionicons name="heart" size={20} color="#FF6B9D" />
-      </TouchableOpacity>
-
-      {/* Movie Info */}
-      <View style={styles.movieInfo}>
-        <Text style={styles.movieTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <View style={styles.ratingRow}>
-          <Ionicons name="star" size={12} color="#FFD700" />
-          <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
+        <View style={styles.movieInfo}>
+          {item.watchProgress > 0 && (
+            <Text style={styles.timeLeft}>
+              {calculateTimeLeft(item.duration, item.watchProgress)}
+            </Text>
+          )}
+          <Text style={styles.movieTitle} numberOfLines={1}>
+            {item.title}
+          </Text>
+          <View style={styles.metaRow}>
+            <Text style={styles.metaText}>{item.year}</Text>
+            <Text style={styles.metaDot}>•</Text>
+            <Text style={styles.metaText}>{item.genre}</Text>
+          </View>
         </View>
-      </View>
+      </LinearGradient>
+
+      {/* Progress Bar */}
+      {item.watchProgress > 0 && (
+        <View style={styles.progressBarContainer}>
+          <View
+            style={[styles.progressBar, { width: `${item.watchProgress * 100}%` }]}
+          />
+        </View>
+      )}
     </TouchableOpacity>
   );
 
@@ -135,16 +157,20 @@ export default function FavoritesScreen({ navigation }) {
         </>
       ) : (
         <>
-          <Ionicons name="heart-outline" size={80} color="rgba(255, 255, 255, 0.3)" />
-          <Text style={styles.emptyTitle}>No Favorites Yet</Text>
+          <Ionicons
+            name="checkmark-circle-outline"
+            size={80}
+            color="rgba(255, 255, 255, 0.3)"
+          />
+          <Text style={styles.emptyTitle}>All Caught Up!</Text>
           <Text style={styles.emptySubtitle}>
-            Mark movies as favorite to see them here
+            You've completed all your movies
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
             onPress={() => navigation.navigate('Movies')}
           >
-            <Text style={styles.emptyButtonText}>Browse Movies</Text>
+            <Text style={styles.emptyButtonText}>Add More Movies</Text>
           </TouchableOpacity>
         </>
       )}
@@ -159,10 +185,10 @@ export default function FavoritesScreen({ navigation }) {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Ionicons name="heart" size={28} color="#FF6B9D" />
-            <Text style={styles.headerTitle}>My Favorites</Text>
+            <Ionicons name="play-circle" size={28} color="#D4AF37" />
+            <Text style={styles.headerTitle}>Continue Watching</Text>
           </View>
-          <Text style={styles.headerCount}>{filteredFavorites.length} movies</Text>
+          <Text style={styles.headerCount}>{filteredMovies.length} movies</Text>
         </View>
 
         {/* Search Bar */}
@@ -171,7 +197,7 @@ export default function FavoritesScreen({ navigation }) {
             <Ionicons name="search" size={20} color="rgba(255,255,255,0.6)" />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search favorites..."
+              placeholder="Search incomplete movies..."
               placeholderTextColor="rgba(255,255,255,0.4)"
               value={searchQuery}
               onChangeText={handleSearch}
@@ -184,14 +210,12 @@ export default function FavoritesScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Movies Grid */}
+        {/* Movies List */}
         <FlatList
-          data={filteredFavorites}
+          data={filteredMovies}
           renderItem={renderMovieCard}
           keyExtractor={(item) => item.id}
-          numColumns={2}
-          contentContainerStyle={styles.gridContent}
-          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={!loading && renderEmptyState}
           refreshControl={

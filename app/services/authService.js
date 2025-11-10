@@ -291,3 +291,47 @@ export const clearAllData = async () => {
     console.error('Clear data error:', error);
   }
 };
+
+export const deleteUserAccount = async () => {
+  try {
+    // 1️⃣ Get current user's email
+    const currentUserEmail = await AsyncStorage.getItem('@moviemood_current_user');
+    if (!currentUserEmail) {
+      console.error('No current user found in storage');
+      return { success: false, message: 'No user logged in' };
+    }
+
+    // 2️⃣ Get all users
+    const usersStr = await AsyncStorage.getItem('@moviemood_users');
+    const users = usersStr ? JSON.parse(usersStr) : [];
+
+    // 3️⃣ Remove the current user from the array
+    const updatedUsers = users.filter(u => u.email !== currentUserEmail);
+    await AsyncStorage.setItem('@moviemood_users', JSON.stringify(updatedUsers));
+
+    // 4️⃣ Remove all related user data
+    await AsyncStorage.removeItem('@moviemood_current_user');
+    await AsyncStorage.removeItem(`movies_${currentUserEmail}`);
+    await AsyncStorage.removeItem(`favorites_${currentUserEmail}`);
+    await SecureStore.deleteItemAsync('auth_token');
+
+    // (Optional) also clear any leftover keys tied to this user
+    const allKeys = await AsyncStorage.getAllKeys();
+    const userRelatedKeys = allKeys.filter(k =>
+      k.includes(currentUserEmail) ||
+      k.includes('moviemood') ||
+      k.includes('user')
+    );
+
+    for (const key of userRelatedKeys) {
+      await AsyncStorage.removeItem(key);
+    }
+
+    return { success: true, message: 'Account deleted successfully' };
+  } catch (error) {
+    console.error('Delete account error:', error);
+    return { success: false, message: 'Failed to delete account' };
+  }
+};
+
+export default {};

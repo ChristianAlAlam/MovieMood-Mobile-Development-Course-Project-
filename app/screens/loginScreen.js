@@ -57,7 +57,10 @@ export default function LoginScreen ({ navigation }) {
       if(result.success) {
         // Login successful! Navigate to Home Screen
         // Use reset to prevent going back to login screen
-        navigation.navigate('HomeTab');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'HomeTab' }],
+        });
       }
 
       

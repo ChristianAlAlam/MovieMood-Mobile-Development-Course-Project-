@@ -67,7 +67,10 @@ export default function RegisterScreen({ navigation }) {
       if(result.success){
         // Register successful! Navigate to Home Screen
         // Use reset to prevent going back to login screen
-        navigation.navigate('HomeTab');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'HomeTab' }], // or 'Home' depending on your route name
+        });
       }
 
       else{

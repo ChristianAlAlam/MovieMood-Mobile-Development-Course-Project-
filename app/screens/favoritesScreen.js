@@ -12,25 +12,34 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import styles from '../styles/favoritesStyles';
+import Header from '../components/header';
+import FiltersModal from '../modal/filtersModal';
+import styles from '../styles/favoriteStyles';
 
+import { applySearchAndFilters } from '../services/filterService';
 import { getFavoriteMovies, toggleFavorite } from '../services/movieService';
 
-/**
- * FavoritesScreen - Display all favorite movies with Search
- */
 export default function FavoritesScreen({ navigation }) {
   const [allFavorites, setAllFavorites] = useState([]);
   const [filteredFavorites, setFilteredFavorites] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  
+  // Filter state
+  const [activeFilters, setActiveFilters] = useState({
+    genres: [],
+    years: [],
+    ratings: [],
+    ratingRanges: [],
+    sort: 'newest',
+  });
 
   useEffect(() => {
     loadFavorites();
   }, []);
 
-  // Reload when screen comes into focus
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       loadFavorites();
@@ -42,12 +51,17 @@ export default function FavoritesScreen({ navigation }) {
     try {
       const favMovies = await getFavoriteMovies();
       setAllFavorites(favMovies);
-      setFilteredFavorites(favMovies);
+      applyFiltersToMovies(favMovies, searchQuery, activeFilters);
       setLoading(false);
     } catch (error) {
       console.error('Load favorites error:', error);
       setLoading(false);
     }
+  };
+
+  const applyFiltersToMovies = (movies, search, filters) => {
+    const result = applySearchAndFilters(movies, search, filters);
+    setFilteredFavorites(result);
   };
 
   const onRefresh = async () => {
@@ -59,42 +73,39 @@ export default function FavoritesScreen({ navigation }) {
 
   const handleSearch = (query) => {
     setSearchQuery(query);
+    applyFiltersToMovies(allFavorites, query, activeFilters);
+  };
 
-    if (query.trim() === '') {
-      setFilteredFavorites(allFavorites);
-      return;
-    }
+  const handleFiltersApply = (filters) => {
+    setActiveFilters(filters);
+    applyFiltersToMovies(allFavorites, searchQuery, filters);
+    setFiltersVisible(false);
+  };
 
-    const lowerQuery = query.toLowerCase();
-    const results = allFavorites.filter(
-      (movie) =>
-        movie.title.toLowerCase().includes(lowerQuery) ||
-        movie.genre.toLowerCase().includes(lowerQuery) ||
-        (movie.comment && movie.comment.toLowerCase().includes(lowerQuery)) ||
-        movie.year.toString().includes(lowerQuery)
+  const getActiveFiltersCount = () => {
+    return (
+      activeFilters.genres.length +
+      activeFilters.years.length +
+      activeFilters.ratings.length
     );
-    setFilteredFavorites(results);
   };
 
   const handleToggleFavorite = async (movieId) => {
     const result = await toggleFavorite(movieId);
     if (result.success) {
-      // Remove from list if unfavorited
       if (!result.isFavorite) {
         const updatedFavorites = allFavorites.filter((m) => m.id !== movieId);
         setAllFavorites(updatedFavorites);
-        setFilteredFavorites(
-          filteredFavorites.filter((m) => m.id !== movieId)
-        );
+        applyFiltersToMovies(updatedFavorites, searchQuery, activeFilters);
       }
     }
   };
 
   const handleMoviePress = (movie) => {
-    navigation.navigate('MovieDetails', { movieId: movie.id });
+    navigation.navigate('MovieDetails', { movie });
   };
 
-  const renderMovieCard = ({ item }) => (
+  const renderMovieItem = ({ item }) => (
     <TouchableOpacity
       style={styles.movieCard}
       onPress={() => handleMoviePress(item)}
@@ -102,7 +113,6 @@ export default function FavoritesScreen({ navigation }) {
     >
       <Image source={{ uri: item.poster }} style={styles.moviePoster} />
 
-      {/* Favorite Badge */}
       <TouchableOpacity
         style={styles.favoriteButton}
         onPress={() => handleToggleFavorite(item.id)}
@@ -110,7 +120,6 @@ export default function FavoritesScreen({ navigation }) {
         <Ionicons name="heart" size={20} color="#FF6B9D" />
       </TouchableOpacity>
 
-      {/* Movie Info */}
       <View style={styles.movieInfo}>
         <Text style={styles.movieTitle} numberOfLines={1}>
           {item.title}
@@ -125,13 +134,37 @@ export default function FavoritesScreen({ navigation }) {
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      {searchQuery ? (
+      {searchQuery || getActiveFiltersCount() > 0 ? (
         <>
           <Ionicons name="search-outline" size={80} color="rgba(255, 255, 255, 0.3)" />
           <Text style={styles.emptyTitle}>No Results Found</Text>
           <Text style={styles.emptySubtitle}>
-            Try searching with different keywords
+            Try adjusting your filters or search terms
           </Text>
+          {getActiveFiltersCount() > 0 && (
+            <TouchableOpacity
+              style={styles.emptyButton}
+              onPress={() => {
+                setActiveFilters({
+                  genres: [],
+                  years: [],
+                  ratings: [],
+                  ratingRanges: [],
+                  sort: 'newest',
+                });
+                setSearchQuery('');
+                applyFiltersToMovies(allFavorites, '', {
+                  genres: [],
+                  years: [],
+                  ratings: [],
+                  ratingRanges: [],
+                  sort: 'newest',
+                });
+              }}
+            >
+              <Text style={styles.emptyButtonText}>Clear Filters</Text>
+            </TouchableOpacity>
+          )}
         </>
       ) : (
         <>
@@ -142,7 +175,7 @@ export default function FavoritesScreen({ navigation }) {
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
-            onPress={() => navigation.navigate('Movies')}
+            onPress={() => navigation.navigate('Watchlist')}
           >
             <Text style={styles.emptyButtonText}>Browse Movies</Text>
           </TouchableOpacity>
@@ -156,14 +189,13 @@ export default function FavoritesScreen({ navigation }) {
       <StatusBar barStyle="light-content" />
 
       <LinearGradient colors={['#0A0A0F', '#1A1A24']} style={styles.gradient}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Ionicons name="heart" size={28} color="#FF6B9D" />
-            <Text style={styles.headerTitle}>My Favorites</Text>
-          </View>
-          <Text style={styles.headerCount}>{filteredFavorites.length} movies</Text>
-        </View>
+        <Header
+          title="My Favorites"
+          iconName="heart"
+          iconColor="#FF6B9D"
+          itemCount={filteredFavorites.length}
+          onProfilePress={() => navigation.navigate('Profile')}
+        />
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
@@ -182,12 +214,49 @@ export default function FavoritesScreen({ navigation }) {
               </TouchableOpacity>
             )}
           </View>
+          
+            {/* Header with Title and Actions */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Your LoveList</Text>
+            
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                style={[styles.iconButton, getActiveFiltersCount() > 0 && styles.iconButtonActive]}
+                onPress={() => setFiltersVisible(true)}
+              >
+                <Ionicons name="options-outline" size={22} color="#fff" />
+                {getActiveFiltersCount() > 0 && (
+                  <View style={styles.filterBadge}>
+                    <Text style={styles.filterBadgeText}>{getActiveFiltersCount()}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              
+              {/* <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
+              >
+                <Ionicons
+                  name={viewMode === 'list' ? 'grid-outline' : 'list-outline'}
+                  size={22}
+                  color="#fff"
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => setIsAddModalVisible(true)}
+              >
+                <Ionicons name='add-outline' size={22} color="#FFFFFF"/>
+              </TouchableOpacity> */}
+            </View>
+          </View>
         </View>
 
         {/* Movies Grid */}
         <FlatList
           data={filteredFavorites}
-          renderItem={renderMovieCard}
+          renderItem={({ item }) => renderMovieItem({ item })}
           keyExtractor={(item) => item.id}
           numColumns={2}
           contentContainerStyle={styles.gridContent}
@@ -203,6 +272,14 @@ export default function FavoritesScreen({ navigation }) {
           }
         />
       </LinearGradient>
+
+      {/* Filters Modal */}
+      <FiltersModal
+        visible={filtersVisible}
+        onClose={() => setFiltersVisible(false)}
+        onApply={handleFiltersApply}
+        initialFilters={activeFilters}
+      />
     </SafeAreaView>
   );
 }

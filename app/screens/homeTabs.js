@@ -17,7 +17,7 @@ const Tab = createBottomTabNavigator();
 const CustomTabBarBackground = () => {
   return (
     <View style={styles.blurContainer}>
-      <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
+      <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
     </View>
   );
 };

@@ -2,26 +2,28 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    ImageBackground,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  ImageBackground,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
+import EditMovieModal from '../modal/editMovieModal';
 import {
-    deleteMovie,
-    getMovieById,
-    toggleCompleted,
-    toggleFavorite
+  deleteMovie,
+  getMovieById,
+  toggleCompleted,
+  toggleFavorite
 } from '../services/movieService';
 import styles from '../styles/movieDetailsStyles';
+
 
 export default function MovieDetailsScreen({ route, navigation }) {
     const { movieId, movie: initialMovie } = route.params || {};
@@ -29,6 +31,9 @@ export default function MovieDetailsScreen({ route, navigation }) {
     const [movie, setMovie] = useState(initialMovie || null);
     const [loading, setLoading] = useState(!initialMovie);
     const [showFullDescription, setShowFullDescription] = useState(false);
+    const [editVisible, setEditVisible] = useState(false);
+    const [selectedMovie, setSelectedMovie] = useState(null);
+
 
     useEffect(() => {
         if (!initialMovie && movieId) {
@@ -69,27 +74,45 @@ export default function MovieDetailsScreen({ route, navigation }) {
     };
 
     const handleDelete = () => {
-        Alert.alert(
-        'Delete Movie',
-        'Are you sure you want to delete this movie?',
-        [
-            { text: 'Cancel', style: 'cancel' },
-            {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: async () => {
-                const result = await deleteMovie(movieId);
-                if (result.success) {
-                navigation.goBack();
-                }
-            },
-            },
-        ]
-        );
-    };
+  const id = movieId || movie?.id;
+  if (!id) {
+    Alert.alert('Error', 'Movie ID not found');
+    return;
+  }
+
+  Alert.alert(
+    'Delete Movie',
+    'Are you sure you want to delete this movie?',
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const result = await deleteMovie(id);
+            console.log('Delete result:', result);
+
+            if (result.success) {
+              Alert.alert('Deleted', 'Movie was deleted successfully.');
+              navigation.goBack();
+            } else {
+              Alert.alert('Error', result.message || 'Failed to delete movie.');
+            }
+          } catch (error) {
+            console.error('Error deleting movie:', error);
+            Alert.alert('Error', 'Something went wrong.');
+          }
+        },
+      },
+    ]
+  );
+};
+
 
     const handleEdit = () => {
-        console.log('Edit movie:', movieId);
+      setSelectedMovie(movie);  // Pass the current movie
+      setEditVisible(true);     // Show the modal
     };
 
     const renderStars = (rating) => {
@@ -108,13 +131,13 @@ export default function MovieDetailsScreen({ route, navigation }) {
     };
 
     const renderDescription = () => {
-        if (!movie.description) return null;
+        if (!movie.comment) return null;
         
         const maxLength = 150;
-        const needsTruncation = movie.description.length > maxLength;
+        const needsTruncation = movie.comment.length > maxLength;
         const displayText = showFullDescription || !needsTruncation
-            ? movie.description
-            : movie.description.substring(0, maxLength) + '...';
+            ? movie.comment
+            : movie.comment.substring(0, maxLength) + '...';
 
         return (
             <View style={styles.descriptionContainer}>
@@ -228,6 +251,18 @@ return (
           </ScrollView>
         </SafeAreaView>
       </ImageBackground>
+
+      <EditMovieModal
+        visible={editVisible}
+        onClose={() => setEditVisible(false)}
+        movie={selectedMovie}
+        onSuccess={(updatedMovie) => {
+          // Update the movie state in the details screen
+          setMovie(updatedMovie);
+          // Optionally, if you have a list in the previous screen, you can pass back params or refresh
+        }}
+      />
+
     </View>
   );
 }

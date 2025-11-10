@@ -114,7 +114,8 @@ const styles = StyleSheet.create({
 
   // Continue Watching Card
   continueWatchingCard: {
-    marginHorizontal: 20,
+    width: 360,
+    marginRight: 12,
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',

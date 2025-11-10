@@ -166,7 +166,7 @@ inputGroup: {
 inputLabel: {
   fontSize: 11,
   fontWeight: '600',
-  color: '#D4AF37',
+  color: '#FFFFFF',
   letterSpacing: 2,
   marginBottom: 8,
 },

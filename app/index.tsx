@@ -8,6 +8,7 @@ import LoginScreen from './screens/loginScreen';
 import MovieDetailsScreen from './screens/movieDetailsScreen';
 import ProfileScreen from './screens/profileScreen';
 import RegisterScreen from './screens/registerScreen';
+import SettingsScreen from './screens/settingsScreen';
 import { isLoggedIn } from './services/authService';
 
 const Stack = createStackNavigator();
@@ -47,6 +48,7 @@ export default function App() {
         component={MovieDetailsScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen name="Settings" component={SettingsScreen} options={{headerShown: false}}/>
     </Stack.Navigator>
     </SafeAreaProvider>
   );

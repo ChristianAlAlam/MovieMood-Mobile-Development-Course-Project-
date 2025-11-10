@@ -189,7 +189,7 @@ export default function ProfileScreen({ navigation }) {
               <Ionicons name="chevron-back" size={22} color="#fff" />
             </TouchableOpacity>
             <Text style={styles.topBarTitle}>My account</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
               <Ionicons name="settings-outline" size={22} color="#fff" />
             </TouchableOpacity>
           </View>

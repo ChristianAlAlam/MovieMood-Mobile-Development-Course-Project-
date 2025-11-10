@@ -14,7 +14,6 @@ const styles = StyleSheet.create({
   // Search Bar
   searchContainer: {
     paddingHorizontal: 20,
-    paddingTop: 10,
     paddingBottom: 15,
   },
 
@@ -23,7 +22,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 25,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     paddingVertical: 12,
     gap: 10,
   },
@@ -31,38 +30,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: '#fff',
-  },
-
-  // Genre Pills
-  genreScroll: {
-    marginBottom: 20,
-  },
-
-  genreScrollContent: {
-    paddingHorizontal: 20,
-    gap: 10,
-  },
-
-  genrePill: {
-    // paddingHorizontal: 20,
-    // paddingVertical: 0,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginRight: 10,
-  },
-
-  genrePillActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-
-  genrePillText: {
-    fontSize: 15,
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontWeight: '500',
-  },
-
-  genrePillTextActive: {
     color: '#fff',
   },
 

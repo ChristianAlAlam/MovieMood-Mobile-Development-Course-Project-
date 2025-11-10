@@ -61,6 +61,34 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 
+// Header
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    marginBottom: 5,
+  },
+
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+
+  headerActions: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+
+  iconButton: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   // List
   listContent: {
     paddingHorizontal: 20,

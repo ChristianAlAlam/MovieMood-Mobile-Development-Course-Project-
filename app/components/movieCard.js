@@ -1,194 +1,137 @@
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
+import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 /**
- * MovieCard Component
+ * MovieCard - Grid view movie card component
  * 
- * Displays a movie with poster, title, rating, and genre
- * 
- * @param {object} movie - Movie data object
- * @param {string} movie.id - Movie ID
- * @param {string} movie.title - Movie title
- * @param {number} movie.rating - Movie rating (0-5)
- * @param {string} movie.genre - Movie genre
- * @param {string} movie.poster - Movie poster (emoji or URI)
- * @param {function} onPress - Callback when card is pressed
- * @param {boolean} isFavorite - Whether movie is favorited
+ * @param {object} movie - Movie data
+ * @param {function} onPress - Called when card is pressed
+ * @param {function} onOptionsPress - Called when options button is pressed
  */
-const MovieCard = ({ movie, onPress, isFavorite = false }) => {
-  /**
-   * Render star rating
-   */
-  const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Ionicons key={`full-${i}`} name="star" size={12} color="#FFD700" />
-      );
-    }
-
-    if (hasHalfStar) {
-      stars.push(
-        <Ionicons key="half" name="star-half" size={12} color="#FFD700" />
-      );
-    }
-
-    const emptyStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <Ionicons
-          key={`empty-${i}`}
-          name="star-outline"
-          size={12}
-          color="#FFD700"
-        />
-      );
-    }
-
-    return stars;
-  };
-
+export default function MovieCard({ movie, onPress, onOptionsPress }) {
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={styles.card}
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <BlurView intensity={30} style={styles.card}>
-        {/* Poster Section */}
-        <View style={styles.posterContainer}>
-          <Image
-            source={{ uri: movie.poster }}
-            style={styles.posterImage}
-            resizeMode="cover"
-          />
-          
-          {/* Favorite Badge */}
-          {isFavorite && (
-            <View style={styles.favoriteBadge}>
-              <Ionicons name="heart" size={16} color="#FF6B9D" />
-            </View>
-          )}
-        </View>
+      <Image
+        source={{ uri: movie.poster }}
+        style={styles.poster}
+        resizeMode="cover"
+      />
+      
+      {/* Options Button */}
+      {onOptionsPress && (
+        <TouchableOpacity
+          style={styles.optionsButton}
+          onPress={onOptionsPress}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="ellipsis-vertical" size={18} color="#fff" />
+        </TouchableOpacity>
+      )}
 
-        {/* Info Section */}
-        <View style={styles.infoContainer}>
-          {/* Title */}
-          <Text style={styles.title} numberOfLines={1}>
-            {movie.title}
-          </Text>
+      {/* Rating Badge */}
+      <View style={styles.ratingBadge}>
+        <Ionicons name="star" size={12} color="#FFD700" />
+        <Text style={styles.ratingText}>{movie.rating}</Text>
+      </View>
 
-          {/* Genre Badge */}
-          <View style={styles.genreBadge}>
-            <Text style={styles.genre}>{movie.genre}</Text>
+      {/* Movie Info Overlay */}
+      <View style={styles.infoOverlay}>
+        <Text style={styles.movieTitle} numberOfLines={2}>
+          {movie.title}
+        </Text>
+        <Text style={styles.movieYear}>{movie.year}</Text>
+      </View>
+
+      {/* Status Indicators */}
+      <View style={styles.statusContainer}>
+        {movie.isFavorite && (
+          <View style={styles.statusBadge}>
+            <Ionicons name="heart" size={12} color="#FF6B9D" />
           </View>
-
-          {/* Rating */}
-          <View style={styles.ratingContainer}>
-            <View style={styles.stars}>{renderStars(movie.rating)}</View>
-            <Text style={styles.ratingText}>{movie.rating.toFixed(1)}</Text>
+        )}
+        {movie.isCompleted && (
+          <View style={styles.statusBadge}>
+            <Ionicons name="checkmark-circle" size={12} color="#4CAF50" />
           </View>
-        </View>
-      </BlurView>
+        )}
+      </View>
     </TouchableOpacity>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    marginRight: 15,
-  },
-
   card: {
-    width: '100%',
-    maxWidth: 160,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(192, 192, 192, 0.2)',
-    overflow: 'hidden',
-    backgroundColor: 'rgba(27, 47, 79, 0.5)',
-  },
-
-  // Poster Section
-  posterContainer: {
-    height: 200,
-    backgroundColor: 'rgba(11, 31, 63, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-
-  poster: {
-    fontSize: 80,
-  },
-
-  posterImage: {
-    width: '100%',
-    height: '100%',
+    width: '48%',
+    marginBottom: 15,
     borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#2A2A3A',
   },
-
-  favoriteBadge: {
+  poster: {
+    width: '100%',
+    height: 240,
+    backgroundColor: '#1A1A24',
+  },
+  optionsButton: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
+    top: 8,
+    right: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
   },
-
-  // Info Section
-  infoContainer: {
-    padding: 12,
-  },
-
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 6,
-  },
-
-  genreBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(212, 175, 55, 0.2)',
+  ratingBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
-    marginBottom: 8,
+    borderRadius: 12,
   },
-
-  genre: {
-    fontSize: 10,
-    color: '#D4AF37',
+  ratingText: {
+    color: '#fff',
+    fontSize: 12,
     fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    marginLeft: 4,
   },
-
-  ratingContainer: {
+  infoOverlay: {
+    padding: 12,
+  },
+  movieTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  movieYear: {
+    fontSize: 12,
+    color: '#888',
+  },
+  statusContainer: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 6,
   },
-
-  stars: {
-    flexDirection: 'row',
-    gap: 2,
-  },
-
-  ratingText: {
-    fontSize: 12,
-    color: '#C0C0C0',
-    fontWeight: '600',
+  statusBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
-
-export default MovieCard;

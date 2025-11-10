@@ -1,26 +1,43 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getCurrentUser } from '../services/authService';
 
 /**
  * Header Component
  * 
- * Displays user info and actions at the top of the screen
- * 
- * @param {string} userName - User's name for greeting
- * @param {string} userAvatar - URI of user's avatar image
- * @param {function} onProfilePress - Callback when profile is pressed
- * @param {function} onNotificationPress - Callback for notifications (optional)
- * @param {function} onSettingsPress - Callback for settings (optional)
+ * Unified elegant header used across screens.
+ * Includes:
+ * - Avatar (left)
+ * - Screen title & optional icon
+ * - Item count (right)
  */
 const Header = ({
-  userName,
-  userAvatar,
+  // userAvatar,
   title,
-  mode = "default", // "default" shows MovieMood title & icons, "simple" shows screen title only
+  ionIconName,          // Default icon like in Favorites
+  materialCommunityIconName,
+  iconColor,
+  itemCount,               // For showing "x movies"
   onProfilePress,
-  onNotificationPress,
-  onSettingsPress,
+  isHome,
 }) => {
+
+  const [user, setUser] = useState(null);
+
+  const handleCurrentUser = async () => {
+    try {
+          const u = await getCurrentUser();
+          setUser(u);
+    } catch (error) {
+          console.error('Load Current User error:', error);
+    }
+  };
+  
+  useEffect(() => {
+    handleCurrentUser();
+  }, []);
+
   return (
     <View style={styles.container}>
       
@@ -30,8 +47,8 @@ const Header = ({
         onPress={onProfilePress}
         activeOpacity={0.7}
       >
-        {userAvatar ? (
-          <Image source={{ uri: userAvatar }} style={styles.avatar} />
+        {user ? (
+          <Image source={{ uri: user.avatar }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarPlaceholder}>
             <Ionicons name="person" size={24} color="#C0C0C0" />
@@ -39,39 +56,19 @@ const Header = ({
         )}
       </TouchableOpacity>
 
-      {/* Center (Switch between logo title and screen title) */}
+      {/* Center: Icon + Title */}
       <View style={styles.centerContainer}>
-        <Text style={styles.appTitle}>
-          {mode === "simple" ? title : "MovieMood"}
-        </Text>
+        {/* {ionIconName ? <Ionicons name={iconName} size={26} color={iconColor} style={{ marginRight: 8 }} />
+        :
+        <MaterialCommunityIcons name={materialCommunityIconName} size={26} color={iconColor} style={{marginRight: 8}}/>} */}
+        <Text style={styles.headerTitle}>{title}</Text>
       </View>
 
-      {/* Right Section */}
-      {mode === "default" ? (
-        <View style={styles.actionsContainer}>
-          {onNotificationPress && (
-            <TouchableOpacity style={styles.iconButton} onPress={onNotificationPress}>
-              <Ionicons name="notifications-outline" size={24} color="#C0C0C0" />
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>3</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-
-          {onSettingsPress && (
-            <TouchableOpacity style={styles.iconButton} onPress={onSettingsPress}>
-              <Ionicons name="settings-outline" size={24} color="#C0C0C0" />
-            </TouchableOpacity>
-          )}
-        </View>
-      ) : (
-        // Fill empty space to keep title centered
-        <View style={{ width: 45 }} />
-      )}
+      {/* Right: Movie Count */}
+      {isHome ? <Text style={styles.headerCount}>        </Text> : <Text style={styles.headerCount}>{itemCount} movies</Text>}
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -80,14 +77,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    marginBottom: 10,
+    backgroundColor: 'transparent',
   },
 
-  // Avatar Section
   avatarContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#FFFFFF',
@@ -107,54 +103,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // Center Section
   centerContainer: {
-    flex: 1,
-    alignItems: 'center',
-    marginHorizontal: 15,
-  },
-
-  appTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'PlayfairDisplay-Bold',
-    color: '#C0C0C0',
-    letterSpacing: 2,
-  },
-
-  // Actions Section
-  actionsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 15,
+    gap: 10,
   },
 
-  iconButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#fff',
   },
 
-  // Notification Badge
-  badge: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 8,
-    minWidth: 16,
-    height: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: 'bold',
+  headerCount: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '500',
   },
 });
 

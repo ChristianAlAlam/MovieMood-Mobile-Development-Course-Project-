@@ -15,18 +15,14 @@ import {
   View
 } from 'react-native';
 import * as Yup from 'yup';
-import { addMovie } from '../services/movieService';
+import { updateMovie } from '../services/movieService';
 
-/**
- * Validation Schema with Yup
- */
 const MovieSchema = Yup.object().shape({
   title: Yup.string()
     .min(1, 'Title is too short')
     .max(100, 'Title is too long')
     .required('Title is required'),
-  genre: Yup.string()
-    .required('Genre is required'),
+  genre: Yup.string().required('Genre is required'),
   year: Yup.string()
     .matches(/^\d{4}$/, 'Year must be 4 digits')
     .test('valid-year', 'Year must be between 1900 and current year', (value) => {
@@ -40,32 +36,13 @@ const MovieSchema = Yup.object().shape({
   rating: Yup.number()
     .min(0, 'Rating must be between 0 and 5')
     .max(5, 'Rating must be between 0 and 5'),
-  comment: Yup.string()
-    .max(500, 'Comment is too long (max 500 characters)'),
-  watchProgress: Yup.number()
-  .min(0)
-  .max(1)
-  .required(),
+  comment: Yup.string().max(500, 'Comment is too long (max 500 characters)'),
 });
 
-/**
- * AddMovieModal - Form to add new movie with Formik & Yup
- */
-export default function AddMovieModal({ visible, onClose, onSuccess }) {
+export default function EditMovieModal({ visible, onClose, movie, onSuccess }) {
   const genres = ['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Romance', 'Thriller', 'Documentary'];
 
-  const initialValues = {
-    title: '',
-    genre: 'Action',
-    year: new Date().getFullYear().toString(),
-    duration: '',
-    rating: 0,
-    comment: '',
-    poster: null,
-    isFavorite: false,
-    isCompleted: false,
-    watchProgress: 0,
-  };
+  if (!movie) return null;
 
   const pickImage = async (setFieldValue) => {
     try {
@@ -79,8 +56,8 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [5, 5],
-        quality: 1,
+        aspect: [2, 3],
+        quality: 0.8,
       });
 
       if (!result.canceled) {
@@ -91,25 +68,23 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
     }
   };
 
-  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+  const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const result = await addMovie({
+      const result = await updateMovie(movie.id, {
         ...values,
-        poster: values.poster || '🎬',
         rating: Number(values.rating),
       });
 
       if (result.success) {
-        Alert.alert('Success', 'Movie added successfully!');
-        resetForm();
+        Alert.alert('Success', 'Movie updated successfully!');
         onSuccess && onSuccess(result.movie);
         onClose();
       } else {
         Alert.alert('Error', result.message);
       }
     } catch (error) {
-      console.error('Save movie error:', error);
-      Alert.alert('Error', 'Failed to add movie');
+      console.error('Update movie error:', error);
+      Alert.alert('Error', 'Failed to update movie');
     }
     setSubmitting(false);
   };
@@ -140,9 +115,21 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Formik
-            initialValues={initialValues}
+            initialValues={{
+              title: movie.title || '',
+              genre: movie.genre || 'Action',
+              year: movie.year?.toString() || new Date().getFullYear().toString(),
+              duration: movie.duration || '',
+              rating: movie.rating || 0,
+              comment: movie.comment || '',
+              poster: movie.poster || null,
+              watchProgress: movie.watchProgress || 0,
+              isFavorite: movie.isFavorite || false,
+              isCompleted: movie.isCompleted || false,
+            }}
             validationSchema={MovieSchema}
             onSubmit={handleSubmit}
+            enableReinitialize
           >
             {({
               handleChange,
@@ -155,17 +142,15 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
               isSubmitting,
             }) => (
               <>
-                {/* Header */}
                 <View style={styles.header}>
                   <TouchableOpacity onPress={onClose}>
                     <Ionicons name="close" size={28} color="#fff" />
                   </TouchableOpacity>
-                  <Text style={styles.title}>Add Movie</Text>
+                  <Text style={styles.title}>Edit Movie</Text>
                   <View style={{ width: 28 }} />
                 </View>
 
                 <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-                  {/* Poster */}
                   <View style={styles.posterSection}>
                     <TouchableOpacity
                       style={styles.posterButton}
@@ -176,13 +161,12 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                       ) : (
                         <View style={styles.posterPlaceholder}>
                           <Ionicons name="image-outline" size={40} color="#fff" />
-                          <Text style={styles.posterText}>Add Poster</Text>
+                          <Text style={styles.posterText}>Change Poster</Text>
                         </View>
                       )}
                     </TouchableOpacity>
                   </View>
 
-                  {/* Title */}
                   <View style={styles.inputGroup}>
                     <Text style={styles.label}>TITLE *</Text>
                     <TextInput
@@ -201,7 +185,6 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                     )}
                   </View>
 
-                  {/* Genre */}
                   <View style={styles.inputGroup}>
                     <Text style={styles.label}>GENRE *</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -229,7 +212,6 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                     </ScrollView>
                   </View>
 
-                  {/* Year & Duration */}
                   <View style={styles.row}>
                     <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
                       <Text style={styles.label}>YEAR</Text>
@@ -270,7 +252,6 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                     </View>
                   </View>
 
-                  {/* Rating */}
                   <View style={styles.inputGroup}>
                     <Text style={styles.label}>RATING</Text>
                     <View style={styles.starsRow}>
@@ -281,7 +262,6 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                     </Text>
                   </View>
 
-                  {/* Comment */}
                   <View style={styles.inputGroup}>
                     <Text style={styles.label}>COMMENT / REVIEW</Text>
                     <TextInput
@@ -290,7 +270,7 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                         styles.textArea,
                         touched.comment && errors.comment && styles.inputError,
                       ]}
-                      placeholder="Write your thoughts about this movie..."
+                      placeholder="Write your thoughts..."
                       placeholderTextColor="rgba(255,255,255,0.4)"
                       value={values.comment}
                       onChangeText={handleChange('comment')}
@@ -302,7 +282,7 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                       <Text style={styles.errorText}>{errors.comment}</Text>
                     )}
                     <Text style={styles.characterCount}>
-                      {values.comment.length} / 500  characters
+                      {values.comment.length} / 500 characters
                     </Text>
                   </View>
 
@@ -325,7 +305,6 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                     </Text>
                   </View>
 
-                  {/* Toggles */}
                   <View style={styles.togglesRow}>
                     <TouchableOpacity
                       style={styles.toggleButton}
@@ -357,7 +336,6 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                   <View style={{ height: 20 }} />
                 </ScrollView>
 
-                {/* Save Button */}
                 <TouchableOpacity
                   style={styles.saveButton}
                   onPress={handleSubmit}
@@ -366,7 +344,7 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                   {isSubmitting ? (
                     <ActivityIndicator color="#000" />
                   ) : (
-                    <Text style={styles.saveButtonText}>Add Movie</Text>
+                    <Text style={styles.saveButtonText}>Save Changes</Text>
                   )}
                 </TouchableOpacity>
               </>
@@ -384,7 +362,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.95)',
     justifyContent: 'flex-end',
   },
-
   modalContent: {
     backgroundColor: '#1A1A24',
     borderTopLeftRadius: 25,
@@ -392,7 +369,6 @@ const styles = StyleSheet.create({
     maxHeight: '90%',
     paddingBottom: 20,
   },
-
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -401,34 +377,28 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-
   title: {
     fontSize: 24,
     fontWeight: '600',
     color: '#fff',
   },
-
   scrollView: {
     paddingHorizontal: 20,
   },
-
   posterSection: {
     alignItems: 'center',
     marginVertical: 20,
   },
-
   posterButton: {
     width: 150,
     height: 225,
     borderRadius: 12,
     overflow: 'hidden',
   },
-
   posterImage: {
     width: '100%',
     height: '100%',
   },
-
   posterPlaceholder: {
     width: '100%',
     height: '100%',
@@ -437,16 +407,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-
   posterText: {
     color: '#fff',
     fontSize: 14,
   },
-
   inputGroup: {
     marginBottom: 20,
   },
-
   label: {
     fontSize: 11,
     fontWeight: '600',
@@ -454,7 +421,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     marginBottom: 10,
   },
-
   input: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,
@@ -464,39 +430,32 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-
   inputError: {
     borderColor: '#FF6B6B',
   },
-
   textArea: {
     height: 100,
     textAlignVertical: 'top',
   },
-
   errorText: {
     color: '#FF6B6B',
     fontSize: 12,
     marginTop: 6,
     marginLeft: 4,
   },
-
   characterCount: {
     fontSize: 11,
     color: 'rgba(255, 255, 255, 0.5)',
     marginTop: 6,
     textAlign: 'right',
   },
-
   row: {
     flexDirection: 'row',
   },
-
   genreRow: {
     flexDirection: 'row',
     gap: 10,
   },
-
   genreChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -505,39 +464,32 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-
   genreChipActive: {
     backgroundColor: '#8B5CF6',
     borderColor: '#8B5CF6',
   },
-
   genreChipText: {
     color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 14,
     fontWeight: '500',
   },
-
   genreChipTextActive: {
     color: '#fff',
   },
-
   starsRow: {
     flexDirection: 'row',
     gap: 10,
   },
-
   ratingHint: {
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.5)',
     marginTop: 8,
   },
-
   togglesRow: {
     flexDirection: 'row',
     gap: 15,
     marginBottom: 20,
   },
-
   toggleButton: {
     flex: 1,
     flexDirection: 'row',
@@ -550,13 +502,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-
   toggleText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: '500',
   },
-
   saveButton: {
     marginHorizontal: 20,
     backgroundColor: '#fff',
@@ -564,7 +514,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: 'center',
   },
-
   saveButtonText: {
     fontSize: 16,
     fontWeight: '600',

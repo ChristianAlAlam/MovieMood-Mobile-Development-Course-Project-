@@ -6,7 +6,7 @@ const CARD_WIDTH = (width - 60) / 2; // 2 columns with padding
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    //backgroundColor: '#0A0A0F',
   },
 
   gradient: {
@@ -19,26 +19,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    paddingTop: 15,
+    marginBottom: 5,
   },
 
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '600',
-    color: '#fff',
+    color: '#FFFFFF',
   },
 
-  headerCount: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontWeight: '500',
+  headerActions: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+
+  iconButton: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   // Grid

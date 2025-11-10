@@ -14,29 +14,56 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styles from '../styles/continueWatchingStyles';
 
+import Header from '../components/header';
+import FiltersModal from '../modal/filtersModal';
+import { applySearchAndFilters } from '../services/filterService';
 import { getMovies } from '../services/movieService';
 
 /**
- * ContinueWatchingScreen - Shows all incomplete movies
- * 
- * Features:
- * - Search incomplete movies
- * - Filter movies with watchProgress < 1
- * - Show progress bar and time left
- * - Navigate to movie details
+ * Helper function to calculate time left
  */
+const calculateTimeLeft = (duration, progress) => {
+  if (!duration || !progress) return 'Continue watching';
+  
+  // Parse duration (e.g., "2h 30min" or "1h 58min")
+  const matches = duration.match(/(\d+)h?\s*(\d+)?m?/i);
+  if (!matches) return 'Continue watching';
+  
+  const hours = parseInt(matches[1]) || 0;
+  const minutes = parseInt(matches[2]) || 0;
+  const totalMinutes = hours * 60 + minutes;
+  
+  const remainingMinutes = Math.round(totalMinutes * (1 - progress));
+  
+  if (remainingMinutes < 1) return 'Almost done';
+  if (remainingMinutes < 60) return `${remainingMinutes} min left`;
+  
+  const remHours = Math.floor(remainingMinutes / 60);
+  const remMins = remainingMinutes % 60;
+  return remMins > 0 ? `${remHours}h ${remMins}m left` : `${remHours}h left`;
+};
+
 export default function ContinueWatchingScreen({ navigation }) {
   const [allInProgress, setAllInProgress] = useState([]);
-  const [filteredMovies, setFilteredMovies] = useState([]);
+  const [filteredContinueWatching, setFilteredContinueWatching] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  
+  // Filter state
+  const [activeFilters, setActiveFilters] = useState({
+    genres: [],
+    years: [],
+    ratings: [],
+    ratingRanges: [],
+    sort: 'newest',
+  });
 
   useEffect(() => {
     loadInProgressMovies();
   }, []);
 
-  // Reload when screen comes into focus
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       loadInProgressMovies();
@@ -47,15 +74,19 @@ export default function ContinueWatchingScreen({ navigation }) {
   const loadInProgressMovies = async () => {
     try {
       const allMovies = await getMovies();
-      // Filter movies that are NOT completed
       const inProgress = allMovies.filter((m) => !m.isCompleted);
       setAllInProgress(inProgress);
-      setFilteredMovies(inProgress);
+      applyFiltersToMovies(inProgress, searchQuery, activeFilters);
       setLoading(false);
     } catch (error) {
       console.error('Load in progress movies error:', error);
       setLoading(false);
     }
+  };
+
+  const applyFiltersToMovies = (movies, search, filters) => {
+    const result = applySearchAndFilters(movies, search, filters);
+    setFilteredContinueWatching(result);
   };
 
   const onRefresh = async () => {
@@ -65,46 +96,30 @@ export default function ContinueWatchingScreen({ navigation }) {
     setRefreshing(false);
   };
 
-  const handleSearch = async (query) => {
+  const handleSearch = (query) => {
     setSearchQuery(query);
-
-    if (query.trim() === '') {
-      setFilteredMovies(allInProgress);
-      return;
-    }
-
-    // Search within incomplete movies
-    const lowerQuery = query.toLowerCase();
-    const results = allInProgress.filter(
-      (movie) =>
-        movie.title.toLowerCase().includes(lowerQuery) ||
-        movie.genre.toLowerCase().includes(lowerQuery) ||
-        (movie.comment && movie.comment.toLowerCase().includes(lowerQuery))
-    );
-    setFilteredMovies(results);
+    applyFiltersToMovies(allInProgress, query, activeFilters);
   };
 
-  const calculateTimeLeft = (duration, progress) => {
-    const match = duration.match(/(\d+)/);
-    if (!match) return 'Time left';
+  const handleFiltersApply = (filters) => {
+    setActiveFilters(filters);
+    applyFiltersToMovies(allInProgress, searchQuery, filters);
+    setFiltersVisible(false);
+  };
 
-    const totalMinutes = parseInt(match[0]);
-    const remainingMinutes = Math.ceil(totalMinutes * (1 - progress));
-
-    if (remainingMinutes < 60) {
-      return `${remainingMinutes} min left`;
-    } else {
-      const hours = Math.floor(remainingMinutes / 60);
-      const mins = remainingMinutes % 60;
-      return mins > 0 ? `${hours}h ${mins}min left` : `${hours}h left`;
-    }
+  const getActiveFiltersCount = () => {
+    return (
+      activeFilters.genres.length +
+      activeFilters.years.length +
+      activeFilters.ratings.length
+    );
   };
 
   const handleMoviePress = (movie) => {
-    navigation.navigate('MovieDetails', { movieId: movie.id });
+    navigation.navigate('MovieDetails', { movie });
   };
 
-  const renderMovieCard = ({ item }) => (
+  const renderMovieItem = ({ item }) => (
     <TouchableOpacity
       style={styles.movieCard}
       onPress={() => handleMoviePress(item)}
@@ -112,7 +127,6 @@ export default function ContinueWatchingScreen({ navigation }) {
     >
       <Image source={{ uri: item.poster }} style={styles.moviePoster} />
 
-      {/* Gradient Overlay */}
       <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.9)']}
         style={styles.movieGradient}
@@ -134,7 +148,6 @@ export default function ContinueWatchingScreen({ navigation }) {
         </View>
       </LinearGradient>
 
-      {/* Progress Bar */}
       {item.watchProgress > 0 && (
         <View style={styles.progressBarContainer}>
           <View
@@ -147,13 +160,37 @@ export default function ContinueWatchingScreen({ navigation }) {
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      {searchQuery ? (
+      {searchQuery || getActiveFiltersCount() > 0 ? (
         <>
           <Ionicons name="search-outline" size={80} color="rgba(255, 255, 255, 0.3)" />
           <Text style={styles.emptyTitle}>No Results Found</Text>
           <Text style={styles.emptySubtitle}>
-            Try searching with different keywords
+            Try adjusting your filters or search terms
           </Text>
+          {getActiveFiltersCount() > 0 && (
+            <TouchableOpacity
+              style={styles.emptyButton}
+              onPress={() => {
+                setActiveFilters({
+                  genres: [],
+                  years: [],
+                  ratings: [],
+                  ratingRanges: [],
+                  sort: 'newest',
+                });
+                setSearchQuery('');
+                applyFiltersToMovies(allInProgress, '', {
+                  genres: [],
+                  years: [],
+                  ratings: [],
+                  ratingRanges: [],
+                  sort: 'newest',
+                });
+              }}
+            >
+              <Text style={styles.emptyButtonText}>Clear Filters</Text>
+            </TouchableOpacity>
+          )}
         </>
       ) : (
         <>
@@ -168,7 +205,7 @@ export default function ContinueWatchingScreen({ navigation }) {
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
-            onPress={() => navigation.navigate('Movies')}
+            onPress={() => navigation.navigate('Watchlist')}
           >
             <Text style={styles.emptyButtonText}>Add More Movies</Text>
           </TouchableOpacity>
@@ -182,14 +219,13 @@ export default function ContinueWatchingScreen({ navigation }) {
       <StatusBar barStyle="light-content" />
 
       <LinearGradient colors={['#0A0A0F', '#1A1A24']} style={styles.gradient}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Ionicons name="play-circle" size={28} color="#D4AF37" />
-            <Text style={styles.headerTitle}>Continue Watching</Text>
-          </View>
-          <Text style={styles.headerCount}>{filteredMovies.length} movies</Text>
-        </View>
+        <Header
+          title="Continue Watching"
+          materialCommunityIconName="movie-filter-outline"
+          iconColor="#FFFFFF"
+          itemCount={filteredContinueWatching.length}
+          onProfilePress={() => navigation.navigate('Profile')}
+        />
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
@@ -208,12 +244,31 @@ export default function ContinueWatchingScreen({ navigation }) {
               </TouchableOpacity>
             )}
           </View>
+          
+          {/* Header with Title and Actions */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Your Ongoing List</Text>
+            
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                style={[styles.iconButton, getActiveFiltersCount() > 0 && styles.iconButtonActive]}
+                onPress={() => setFiltersVisible(true)}
+              >
+                <Ionicons name="options-outline" size={22} color="#fff" />
+                {getActiveFiltersCount() > 0 && (
+                  <View style={styles.filterBadge}>
+                    <Text style={styles.filterBadgeText}>{getActiveFiltersCount()}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
 
         {/* Movies List */}
         <FlatList
-          data={filteredMovies}
-          renderItem={renderMovieCard}
+          data={filteredContinueWatching}
+          renderItem={renderMovieItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -227,6 +282,14 @@ export default function ContinueWatchingScreen({ navigation }) {
           }
         />
       </LinearGradient>
+
+      {/* Filters Modal */}
+      <FiltersModal
+        visible={filtersVisible}
+        onClose={() => setFiltersVisible(false)}
+        onApply={handleFiltersApply}
+        initialFilters={activeFilters}
+      />
     </SafeAreaView>
   );
 }

@@ -441,3 +441,5 @@ export const clearAllMovies = async () => {
     console.error('Clear movies error:', error);
   }
 };
+
+export default {};

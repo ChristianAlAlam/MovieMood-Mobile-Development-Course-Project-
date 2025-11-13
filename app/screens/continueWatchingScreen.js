@@ -216,7 +216,7 @@ export default function ContinueWatchingScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />
 
       <LinearGradient colors={['#0A0A0F', '#1A1A24']} style={styles.gradient}>
         <Header

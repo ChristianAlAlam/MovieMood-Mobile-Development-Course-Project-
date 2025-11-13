@@ -2,15 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import {
-    Alert,
-    Linking,
-    Modal,
-    ScrollView,
-    StatusBar,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  Linking,
+  Modal,
+  ScrollView,
+  StatusBar,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styles from '../styles/settingsStyles';
@@ -141,8 +141,7 @@ export default function SettingsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="light-content" />
-
+      <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />
       <LinearGradient
         colors={['#0A0A0F', '#1A1A24']}
         style={styles.gradient}

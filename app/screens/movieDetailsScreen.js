@@ -174,7 +174,7 @@ export default function MovieDetailsScreen({ route, navigation }) {
 
 return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />
       <ImageBackground
         source={{ uri: movie.poster }}
         style={styles.backgroundImage}

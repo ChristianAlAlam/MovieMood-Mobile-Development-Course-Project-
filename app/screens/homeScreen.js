@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   RefreshControl,
@@ -9,13 +9,13 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import Header from '../components/header';
-import { getCurrentUser } from '../services/authService';
-import { getFavoriteMovies, getMovies } from '../services/movieService';
-import styles from '../styles/homeStyles';
+import Header from "../components/header";
+import { getCurrentUser } from "../services/authService";
+import { getFavoriteMovies, getMovies } from "../services/movieService";
+import styles from "../styles/homeStyles";
 
 export default function HomeScreen({ navigation }) {
   const [user, setUser] = useState(null);
@@ -33,7 +33,7 @@ export default function HomeScreen({ navigation }) {
       const userData = await getCurrentUser();
       setUser(userData);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error("Error loading data:", error);
     }
   };
 
@@ -42,7 +42,7 @@ export default function HomeScreen({ navigation }) {
       const movie = await getMovies();
       setMovies(movie);
     } catch (error) {
-      console.log('Load Movies error', error);
+      console.log("Load Movies error", error);
     }
   };
 
@@ -51,7 +51,7 @@ export default function HomeScreen({ navigation }) {
       const movie = await getFavoriteMovies();
       setFavorites(movie);
     } catch (error) {
-      console.log('Load Favorite error', error);
+      console.log("Load Favorite error", error);
     }
   };
 
@@ -62,25 +62,26 @@ export default function HomeScreen({ navigation }) {
       const moviesWithProgress = inProgress.map((m) => ({
         ...m,
         watchProgress: m.watchProgress || 0.3,
-        timeLeft: m.timeLeft || calculateTimeLeft(m.duration, m.watchProgress || 0.3),
+        timeLeft:
+          m.timeLeft || calculateTimeLeft(m.duration, m.watchProgress || 0.3),
       }));
       setContinueWatching(moviesWithProgress);
     } catch (error) {
-      console.log('Load In Progress error', error);
+      console.log("Load In Progress error", error);
     }
   };
 
   const calculateTimeLeft = (duration, progress) => {
-    if (!duration) return 'Continue watching';
+    if (!duration) return "Continue watching";
     const matches = duration.match(/(\d+)h?\s*(\d+)?m?/i);
-    if (!matches) return 'Continue watching';
+    if (!matches) return "Continue watching";
 
     const hours = parseInt(matches[1]) || 0;
     const minutes = parseInt(matches[2]) || 0;
     const totalMinutes = hours * 60 + minutes;
     const remainingMinutes = Math.round(totalMinutes * (1 - progress));
 
-    if (remainingMinutes < 1) return 'Almost done';
+    if (remainingMinutes < 1) return "Almost done";
     if (remainingMinutes < 60) return `${remainingMinutes} min left`;
 
     const remHours = Math.floor(remainingMinutes / 60);
@@ -98,10 +99,17 @@ export default function HomeScreen({ navigation }) {
   };
 
   const handleMoviePress = (movie) => {
-    navigation.navigate('MovieDetails', { movie });
+    navigation.navigate("MovieDetails", { movie });
   };
 
-  const renderSection = (title, data, emptyMessage, navigateScreen, cardStyle, posterStyle) => (
+  const renderSection = (
+    title,
+    data,
+    emptyMessage,
+    navigateScreen,
+    cardStyle,
+    posterStyle
+  ) => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>{title}</Text>
@@ -111,7 +119,7 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       {data.length === 0 ? (
-        <Text style={{ color: 'gray', textAlign: 'center', marginTop: 10 }}>
+        <Text style={{ color: "gray", textAlign: "center", marginTop: 10 }}>
           {emptyMessage}
         </Text>
       ) : (
@@ -133,16 +141,15 @@ export default function HomeScreen({ navigation }) {
                 resizeMode="cover"
               />
 
-              {/* Optional overlays for continue watching */}
-              {title === 'Continue watching' && (
+              {title === "Continue watching" && (
                 <>
                   <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.9)']}
+                    colors={["transparent", "rgba(0,0,0,0.9)"]}
                     style={styles.continueWatchingOverlay}
                   >
                     <View style={styles.continueWatchingInfo}>
                       <Text style={styles.continueTimeLeft}>
-                        {movie.timeLeft || 'Continue'}
+                        {movie.timeLeft || "Continue"}
                       </Text>
                       <Text style={styles.continueTitle} numberOfLines={1}>
                         {movie.title}
@@ -161,8 +168,7 @@ export default function HomeScreen({ navigation }) {
                 </>
               )}
 
-              {/* Rating badge for other sections */}
-              {title !== 'Continue watching' && (
+              {title !== "Continue watching" && (
                 <View style={styles.ratingBadge}>
                   <Ionicons name="star" size={12} color="#FFD700" />
                   <Text style={styles.ratingText}>{movie.rating}</Text>
@@ -176,14 +182,24 @@ export default function HomeScreen({ navigation }) {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      <LinearGradient colors={['#0A0A0F', '#1A1A24']} location={[0, 1]} style={styles.gradient}>
+    <LinearGradient colors={["#0A0A0F", "#1A1A24"]} style={styles.gradient}>
+      <StatusBar
+        barStyle="default"
+        backgroundColor="transparent"
+        translucent={true}
+      />
+      <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4AF37" />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#D4AF37"
+            />
+          }
         >
           <Header
             mode="simple"
@@ -191,39 +207,39 @@ export default function HomeScreen({ navigation }) {
             iconName="home"
             iconColor="#FFFFFF"
             isHome={true}
-            onProfilePress={() => navigation.navigate('Profile')}
+            onProfilePress={() => navigation.navigate("Profile")}
           />
 
           {renderSection(
-            'Your Favorites',
+            "Your Favorites",
             favorites,
-            'No favorite movies yet ❤️',
-            'Favorite',
+            "No favorite movies yet ❤️",
+            "Favorite",
             styles.trendingCard,
             styles.trendingPoster
           )}
 
           {renderSection(
-            'Continue watching',
+            "Continue watching",
             continueWatching,
-            'No movies in progress yet 🎬',
-            'Continue',
+            "No movies in progress yet 🎬",
+            "Continue",
             styles.continueWatchingCard,
             styles.continueWatchingPoster
           )}
 
           {renderSection(
-            'Your Watchlist',
+            "Your Watchlist",
             movies,
-            'No movies yet 🎬',
-            'Watchlist',
+            "No movies yet 🎬",
+            "Watchlist",
             styles.trendingCard,
             styles.trendingPoster
           )}
 
           <View style={styles.bottomSpacer} />
         </ScrollView>
-      </LinearGradient>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }

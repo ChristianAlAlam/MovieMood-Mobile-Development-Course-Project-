@@ -167,8 +167,7 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      
+      <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />      
       <LinearGradient
         colors={['#8b80a0', '#090909', '#000000', '#000000']}
         locations={[0, 0.4, 0.5, 1]}

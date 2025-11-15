@@ -1,4 +1,4 @@
-# MovieMood
+# MovieMood - Christian Al Alam
 
 A comprehensive React Native mobile application for tracking your movie watching journey. Keep track of movies you want to watch, mark your favorites, and never forget what you've seen.
 
@@ -286,13 +286,3 @@ Christian Al Alam - [ChristianAlAlam](https://github.com/ChristianAlAlam)
 - **Components**: 6+
 - **Lines of Code**: 5000+
 - **Supported Platforms**: iOS & Android
-
-## Privacy & Data
-
-MovieMood respects your privacy:
-
-- All data stored locally on your device
-- No data transmitted to external servers
-- No tracking or analytics
-- Full data export available
-- Account deletion removes all data

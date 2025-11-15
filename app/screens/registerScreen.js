@@ -1,6 +1,6 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import { Formik } from 'formik';
-import React from 'react';
+import { LinearGradient } from "expo-linear-gradient";
+import { Formik } from "formik";
+import React from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -9,21 +9,21 @@ import {
   StatusBar,
   Text,
   TouchableOpacity,
-  View
-} from 'react-native';
-import * as Yup from 'yup';
+  View,
+} from "react-native";
+import * as Yup from "yup";
 
-import styles from '../styles/registerStyles.js';
+import styles from "../styles/registerStyles.js";
 
 // Import our reusable components
-import BackButton from '../components/backButton.js';
-import CustomButton from '../components/customButton.js';
-import CustomInput from '../components/customInput.js';
+import BackButton from "../components/backButton.js";
+import CustomButton from "../components/customButton.js";
+import CustomInput from "../components/customInput.js";
 
-import { registerUser } from '../services/authService.js';
+import { registerUser } from "../services/authService.js";
 /**
  * Validation Schema for Register Form
- * 
+ *
  * Defines the validation rules for all form fields using Yup.
  * - name: Required, minimum 2 characters
  * - email: Required, must be valid email format
@@ -32,30 +32,29 @@ import { registerUser } from '../services/authService.js';
  */
 const RegisterSchema = Yup.object().shape({
   name: Yup.string()
-    .min(2, 'Name must be at least 2 characters')
-    .required('Name is required'),
+    .min(2, "Name must be at least 2 characters")
+    .required("Name is required"),
   email: Yup.string()
-    .email('Invalid email address')
-    .required('Email is required'),
+    .email("Invalid email address")
+    .required("Email is required"),
   password: Yup.string()
-    .min(6, 'Password must be at least 6 characters')
+    .min(6, "Password must be at least 6 characters")
     .matches(
       /^(?=.*[A-Z])(?=.*\d)/,
-      'Password must contain uppercase, lowercase, and number'
+      "Password must contain uppercase, lowercase, and number"
     )
-    .required('Password is required'),
+    .required("Password is required"),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password'), null], 'Passwords must match')
-    .required('Please confirm your password'),
+    .oneOf([Yup.ref("password"), null], "Passwords must match")
+    .required("Please confirm your password"),
 });
 
 export default function RegisterScreen({ navigation }) {
-  
   /**
    * Handle Register Submission
-   * 
+   *
    * This function is called when the form is submitted and validation passes.
-   * 
+   *
    * @param {object} values - Form values (name, email, password, confirmPassword)
    * @param {object} actions - Formik actions (setSubmitting, resetForm, etc.)
    */
@@ -64,24 +63,22 @@ export default function RegisterScreen({ navigation }) {
       // Call the register user function from authService.js
       const result = await registerUser(values);
 
-      if(result.success){
+      if (result.success) {
         // Register successful! Navigate to Home Screen
         // Use reset to prevent going back to login screen
         navigation.reset({
           index: 0,
-          routes: [{ name: 'HomeTab' }], // or 'Home' depending on your route name
+          routes: [{ name: "HomeTab" }], // or 'Home' depending on your route name
         });
-      }
-
-      else{
+      } else {
         // Register Failed - show error message
-        Alert.alert('Register Failed', result.message);
+        Alert.alert("Register Failed", result.message);
       }
 
       setSubmitting(false);
     } catch (error) {
-      console.error('Registration error:', error);
-      Alert.alert('Error', 'An unexpected error occures');
+      console.error("Registration error:", error);
+      Alert.alert("Error", "An unexpected error occures");
       setSubmitting(false);
     }
   };
@@ -89,18 +86,21 @@ export default function RegisterScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Status Bar - light content for dark background */}
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
+
       {/* Background Gradient - matches Landing Screen */}
       <LinearGradient
-        colors={['#000000', '#090909']}
+        colors={["#000000", "#090909", "#090909"]}
         locations={[0, 0.5, 1]}
         style={styles.gradient}
       >
-        
         {/* KeyboardAvoidingView - prevents keyboard from covering inputs */}
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardView}
         >
           {/* ScrollView - allows scrolling when keyboard appears */}
@@ -120,10 +120,10 @@ export default function RegisterScreen({ navigation }) {
             {/* Formik Form */}
             <Formik
               initialValues={{
-                name: '',
-                email: '',
-                password: '',
-                confirmPassword: '',
+                name: "",
+                email: "",
+                password: "",
+                confirmPassword: "",
               }}
               validationSchema={RegisterSchema}
               onSubmit={handleRegister}
@@ -138,15 +138,14 @@ export default function RegisterScreen({ navigation }) {
                 isSubmitting,
               }) => (
                 <View style={styles.formContainer}>
-                  
                   {/* Name Input */}
                   <CustomInput
                     label="FULL NAME"
                     icon="👤"
                     placeholder="John Doe"
                     value={values.name}
-                    onChangeText={handleChange('name')}
-                    onBlur={handleBlur('name')}
+                    onChangeText={handleChange("name")}
+                    onBlur={handleBlur("name")}
                     error={errors.name}
                     touched={touched.name}
                     autoCapitalize="words" // Capitalize each word
@@ -158,8 +157,8 @@ export default function RegisterScreen({ navigation }) {
                     icon="✉️"
                     placeholder="your.email@example.com"
                     value={values.email}
-                    onChangeText={handleChange('email')}
-                    onBlur={handleBlur('email')}
+                    onChangeText={handleChange("email")}
+                    onBlur={handleBlur("email")}
                     error={errors.email}
                     touched={touched.email}
                     keyboardType="email-address"
@@ -171,8 +170,8 @@ export default function RegisterScreen({ navigation }) {
                     icon="🔒"
                     placeholder="Create a strong password"
                     value={values.password}
-                    onChangeText={handleChange('password')}
-                    onBlur={handleBlur('password')}
+                    onChangeText={handleChange("password")}
+                    onBlur={handleBlur("password")}
                     error={errors.password}
                     touched={touched.password}
                     showPasswordToggle={true} // Shows eye icon to toggle visibility
@@ -184,8 +183,8 @@ export default function RegisterScreen({ navigation }) {
                     icon="🔐"
                     placeholder="Re-enter your password"
                     value={values.confirmPassword}
-                    onChangeText={handleChange('confirmPassword')}
-                    onBlur={handleBlur('confirmPassword')}
+                    onChangeText={handleChange("confirmPassword")}
+                    onBlur={handleBlur("confirmPassword")}
                     error={errors.confirmPassword}
                     touched={touched.confirmPassword}
                     showPasswordToggle={true}
@@ -209,9 +208,11 @@ export default function RegisterScreen({ navigation }) {
 
                   {/* Login Link */}
                   <View style={styles.loginContainer}>
-                    <Text style={styles.loginText}>Already have an account? </Text>
+                    <Text style={styles.loginText}>
+                      Already have an account?{" "}
+                    </Text>
                     <TouchableOpacity
-                      onPress={() => navigation.navigate('Login')}
+                      onPress={() => navigation.navigate("Login")}
                       activeOpacity={0.7}
                     >
                       <Text style={styles.loginLink}>Sign In</Text>
@@ -225,4 +226,4 @@ export default function RegisterScreen({ navigation }) {
       </LinearGradient>
     </View>
   );
-};
+}

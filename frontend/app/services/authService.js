@@ -1,336 +1,272 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
+import api from "./api";
 
 /**
- * Authentication Service
- * 
- * Handles all authentication operations including:
- * - User registration (storing user data in AsyncStorage)
- * - User login (validating credentials)
- * - Session management (storing auth token in SecureStore)
- * - Logout (clearing session and data)
- * 
- * Data Storage:
- * - AsyncStorage: Non-sensitive user data (email, name, etc.)
- * - SecureStore: Sensitive data (auth token, session)
+ * Authentication Service - API Version
+ *
+ * Connects to Express backend for authentication
  */
 
 // Storage Keys
 const STORAGE_KEYS = {
-  USERS: '@moviemood_users', // All registered users
-  CURRENT_USER: '@moviemood_current_user', // Currently logged in user email
-  AUTH_TOKEN: 'auth_token', // Session token (SecureStore)
+  AUTH_TOKEN: "auth_token",
+  USER_DATA: "userData",
 };
 
 /**
  * Register a new user
- * 
- * @param {object} userData - User registration data
- * @param {string} userData.name - User's full name
- * @param {string} userData.email - User's email (used as unique identifier)
- * @param {string} userData.password - User's password (in real app, should be hashed)
- * @returns {object} - { success: boolean, message: string, user?: object }
  */
+
 export const registerUser = async (userData) => {
   try {
     const { name, email, password } = userData;
 
-    // 1. Get existing users from AsyncStorage
-    const existingUsersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
-    const existingUsers = existingUsersJson ? JSON.parse(existingUsersJson) : [];
+    const response = await api.post("/auth/register", {
+      name,
+      email,
+      password,
+    });
 
-    // 2. Check if user already exists
-    const userExists = existingUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
-    if (userExists) {
+    if (response.data.success) {
+      const { user, token } = response.data.data;
+
+      // Store token and user data in SecureStore
+      await SecureStore.setItemAsync(STORAGE_KEYS.AUTH_TOKEN, token);
+      await SecureStore.setItemAsync(
+        STORAGE_KEYS.USER_DATA,
+        JSON.stringify(user)
+      );
+
       return {
-        success: false,
-        message: 'An account with this email already exists',
+        success: true,
+        message: "Registration successful!",
+        user,
       };
     }
 
-    // 3. Create new user object
-    const newUser = {
-      id: Date.now().toString(), // Simple unique ID
-      name,
-      email: email.toLowerCase(),
-      password, // NOTE: In production, NEVER store plain passwords! Use bcrypt or similar
-      createdAt: new Date().toISOString(),
-      avatar: null, // Can be set later in profile
-    };
-
-    // 4. Add new user to array
-    existingUsers.push(newUser);
-
-    // 5. Save updated users array to AsyncStorage
-    await AsyncStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(existingUsers));
-
-    // 6. Automatically log in the new user
-    const loginResult = await loginUser({ email, password });
-
-    return {
-      success: true,
-      message: 'Registration successful!',
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-      },
-    };
-  } catch (error) {
-    console.error('Registration error:', error);
     return {
       success: false,
-      message: 'Registration failed. Please try again.',
+      message: response.data.message || "Registration failed",
+    };
+  } catch (error) {
+    console.error("Register error:", error);
+    const errorMessage =
+      error.response?.data?.message || "Registration failed. Please try again.";
+    return {
+      success: false,
+      message: errorMessage,
     };
   }
 };
 
 /**
  * Login user
- * 
- * @param {object} credentials - Login credentials
- * @param {string} credentials.email - User's email
- * @param {string} credentials.password - User's password
- * @returns {object} - { success: boolean, message: string, user?: object }
  */
+
 export const loginUser = async (credentials) => {
   try {
     const { email, password } = credentials;
 
-    // 1. Get all users from AsyncStorage
-    const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
-    const users = usersJson ? JSON.parse(usersJson) : [];
+    const response = await api.post("/auth/login", {
+      email,
+      password,
+    });
 
-    // 2. Find user with matching email
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (response.data.success) {
+      const { user, token } = response.data.data;
 
-    // 3. Validate user exists
-    if (!user) {
+      // Store token and user in SecureStore
+      await SecureStore.setItemAsync(STORAGE_KEYS.AUTH_TOKEN, token);
+      await SecureStore.setItemAsync(
+        STORAGE_KEYS.USER_DATA,
+        JSON.stringify(user)
+      );
+
       return {
-        success: false,
-        message: 'No account found with this email',
+        success: true,
+        message: "Login successful!",
+        user,
       };
     }
 
-    // 4. Validate password
-    if (user.password !== password) {
-      return {
-        success: false,
-        message: 'Incorrect password',
-      };
-    }
-
-    // 5. Generate mock auth token (in real app, this comes from backend)
-    const authToken = `token_${user.id}_${Date.now()}`;
-
-    // 6. Store auth token in SecureStore (encrypted storage)
-    await SecureStore.setItemAsync(STORAGE_KEYS.AUTH_TOKEN, authToken);
-
-    // 7. Store current user email in AsyncStorage (for quick access)
-    await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, user.email);
-
-    // 8. Return success with user data (without password)
-    return {
-      success: true,
-      message: 'Login successful!',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-      },
-    };
-  } catch (error) {
-    console.error('Login error:', error);
     return {
       success: false,
-      message: 'Login failed. Please try again.',
+      message: response.data.message || "Login failed",
+    };
+  } catch (error) {
+    console.error("Login error:", error);
+    const errorMessage =
+      error.response?.data?.message || "Invalid email or password";
+    return {
+      success: false,
+      message: errorMessage,
     };
   }
 };
 
 /**
  * Logout user
- * 
- * Clears session token and current user data
  */
+
 export const logoutUser = async () => {
   try {
-    // 1. Remove auth token from SecureStore
+    // Remove auth token and user data from SecureStore
     await SecureStore.deleteItemAsync(STORAGE_KEYS.AUTH_TOKEN);
-
-    // 2. Remove current user from AsyncStorage
-    await AsyncStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    await SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA);
 
     return {
       success: true,
-      message: 'Logged out successfully',
+      message: "Logged out successfully",
     };
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error("Logout error:", error);
     return {
       success: false,
-      message: 'Logout failed',
+      message: "Logout failed",
     };
   }
 };
 
 /**
  * Check if user is logged in
- * 
- * @returns {boolean} - True if user has valid session
  */
+
 export const isLoggedIn = async () => {
   try {
-    // Check if auth token exists in SecureStore
     const token = await SecureStore.getItemAsync(STORAGE_KEYS.AUTH_TOKEN);
-    return !!token; // Returns true if token exists, false otherwise
+    return !!token;
   } catch (error) {
-    console.error('Session check error:', error);
+    console.error("Session check error:", error);
     return false;
   }
 };
 
 /**
- * Get current logged in user data
- * 
- * @returns {object|null} - User object or null if not logged in
+ * Get current logged in user data (from local storage)
  */
+
 export const getCurrentUser = async () => {
   try {
-    // 1. Get current user email
-    const currentUserEmail = await AsyncStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-    if (!currentUserEmail) return null;
+    const userDataString = await SecureStore.getItemAsync(
+      STORAGE_KEYS.USER_DATA
+    );
+    if (userDataString) {
+      return JSON.parse(userDataString);
+    }
 
-    // 2. Get all users
-    const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
-    const users = usersJson ? JSON.parse(usersJson) : [];
-
-    // 3. Find and return current user (without password)
-    const user = users.find(u => u.email.toLowerCase() === currentUserEmail.toLowerCase());
-    if (!user) return null;
-
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-      createdAt: user.createdAt,
-    };
+    return null;
   } catch (error) {
-    console.error('Get current user error:', error);
+    console.error("Get current user error:", error);
+    return null;
+  }
+};
+
+/**
+ * Get user profile from backend (fresh data)
+ */
+
+export const getUserProfile = async () => {
+  try {
+    const response = await api.get("/auth/profile");
+
+    if (response.data.success) {
+      const user = response.data.data;
+
+      // Update local storage with fresh data
+      await SecureStore.setItemAsync(
+        STORAGE_KEYS.USER_DATA,
+        JSON.stringify(user)
+      );
+      return user;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Get profile error:", error);
     return null;
   }
 };
 
 /**
  * Update user profile
- * 
- * @param {object} updates - Fields to update (name, avatar, etc.)
- * @returns {object} - { success: boolean, message: string, user?: object }
  */
+
 export const updateUserProfile = async (updates) => {
   try {
-    // 1. Get current user email
-    const currentUserEmail = await AsyncStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-    if (!currentUserEmail) {
-      return { success: false, message: 'No user logged in' };
+    const response = await api.put("/auth/profile", updates);
+
+    if (response.data.success) {
+      const user = response.data.data;
+
+      // Updated local storage
+      await SecureStore.setItemAsync(
+        STORAGE_KEYS.USER_DATA,
+        JSON.stringify(user)
+      );
+
+      return {
+        success: true,
+        message: "Profile updated successfully",
+        user,
+      };
     }
 
-    // 2. Get all users
-    const usersJson = await AsyncStorage.getItem(STORAGE_KEYS.USERS);
-    const users = usersJson ? JSON.parse(usersJson) : [];
-
-    // 3. Find user index
-    const userIndex = users.findIndex(u => u.email === currentUserEmail);
-    if (userIndex === -1) {
-      return { success: false, message: 'User not found' };
-    }
-
-    // 4. Update user data
-    users[userIndex] = {
-      ...users[userIndex],
-      ...updates,
-      email: users[userIndex].email, // Email cannot be changed
-      password: users[userIndex].password, // Password cannot be changed here
-    };
-
-    // 5. Save updated users
-    await AsyncStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-
-    return {
-      success: true,
-      message: 'Profile updated successfully',
-      user: {
-        id: users[userIndex].id,
-        name: users[userIndex].name,
-        email: users[userIndex].email,
-        avatar: users[userIndex].avatar,
-      },
-    };
-  } catch (error) {
-    console.error('Update profile error:', error);
     return {
       success: false,
-      message: 'Failed to update profile',
+      message: response.data.message || "Failed to update profile",
+    };
+  } catch (error) {
+    console.error("Update profile error", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to update profile",
+    };
+  }
+};
+
+/**
+ * Delete user account
+ */
+
+export const deleteUserAccount = async () => {
+  try {
+    const response = await api.delete("/auth/account");
+
+    if (response.data.success) {
+      // Clear local storage
+      await SecureStore.deleteItemAsync(STORAGE_KEYS.AUTH_TOKEN);
+      await SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA);
+
+      return {
+        success: true,
+        message: "Account deleted succesfully",
+      };
+    }
+
+    return {
+      success: false,
+      message: response.data.message || "Failed to delete account",
+    };
+  } catch (error) {
+    console.error("Delete account error:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to delete account",
     };
   }
 };
 
 /**
  * Clear all data (for testing/development)
- * WARNING: This deletes ALL user data!
  */
+
 export const clearAllData = async () => {
   try {
-    await AsyncStorage.removeItem(STORAGE_KEYS.USERS);
-    await AsyncStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
     await SecureStore.deleteItemAsync(STORAGE_KEYS.AUTH_TOKEN);
-    console.log('All data cleared successfully');
+    await SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA);
+    console.log("All data cleared successfully");
   } catch (error) {
-    console.error('Clear data error:', error);
-  }
-};
-
-export const deleteUserAccount = async () => {
-  try {
-    // 1️⃣ Get current user's email
-    const currentUserEmail = await AsyncStorage.getItem('@moviemood_current_user');
-    if (!currentUserEmail) {
-      console.error('No current user found in storage');
-      return { success: false, message: 'No user logged in' };
-    }
-
-    // 2️⃣ Get all users
-    const usersStr = await AsyncStorage.getItem('@moviemood_users');
-    const users = usersStr ? JSON.parse(usersStr) : [];
-
-    // 3️⃣ Remove the current user from the array
-    const updatedUsers = users.filter(u => u.email !== currentUserEmail);
-    await AsyncStorage.setItem('@moviemood_users', JSON.stringify(updatedUsers));
-
-    // 4️⃣ Remove all related user data
-    await AsyncStorage.removeItem('@moviemood_current_user');
-    await AsyncStorage.removeItem(`movies_${currentUserEmail}`);
-    await AsyncStorage.removeItem(`favorites_${currentUserEmail}`);
-    await SecureStore.deleteItemAsync('auth_token');
-
-    // (Optional) also clear any leftover keys tied to this user
-    const allKeys = await AsyncStorage.getAllKeys();
-    const userRelatedKeys = allKeys.filter(k =>
-      k.includes(currentUserEmail) ||
-      k.includes('moviemood') ||
-      k.includes('user')
-    );
-
-    for (const key of userRelatedKeys) {
-      await AsyncStorage.removeItem(key);
-    }
-
-    return { success: true, message: 'Account deleted successfully' };
-  } catch (error) {
-    console.error('Delete account error:', error);
-    return { success: false, message: 'Failed to delete account' };
+    console.error("Clear data error:", error);
   }
 };
 

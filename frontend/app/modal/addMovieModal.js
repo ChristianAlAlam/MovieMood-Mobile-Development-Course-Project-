@@ -16,7 +16,7 @@ import {
   View,
 } from "react-native";
 import * as Yup from "yup";
-import { addMovie } from "../services/movieService";
+import { createMovie } from "../services/movieService";
 
 // ------------------- Validation -------------------
 const MovieSchema = Yup.object().shape({
@@ -37,9 +37,15 @@ const MovieSchema = Yup.object().shape({
         return year >= 1900 && year <= currentYear + 1;
       }
     ),
-  duration: Yup.string(),
-  rating: Yup.number().min(0).max(10),
-  comment: Yup.string().max(1000),
+  duration: Yup.number()
+    .nullable()
+    .min(1, "Duration must be at least 1 minute")
+    .max(600, "Duration must be at least less than 600 minutes (10 hours)")
+    .integer("Duration must be a whole number"),
+  rating: Yup.number()
+    .min(0, "Rating must be between 0 and 5")
+    .max(5, "Rating must be between 0 and 5"),
+  comment: Yup.string().max(500, "Comment is too long (max 500 characters)"),
   watchProgress: Yup.number().min(0).max(1).required(),
 });
 
@@ -64,7 +70,7 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
     title: "",
     genre: "Action",
     year: new Date().getFullYear().toString(),
-    duration: "",
+    duration: null,
     rating: 0,
     comment: "",
     poster: null,
@@ -129,18 +135,15 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
           genres.find((g) => g.toLowerCase() === omdbGenre.toLowerCase()) ||
           "Action";
 
-        // Convert IMDB rating (0-10) to our rating system (0-10)
-        const imdbRating = parseFloat(data.imdbRating) || 0;
+        // Convert IMDB rating (0-5) to our rating system (0-5)
+        const imdbRating = parseFloat(data.imdbRating / 2) || 0;
 
-        // Format duration (e.g., "142 min" to "2h 22min")
-        let formattedDuration = data.Runtime || "";
-        if (formattedDuration && formattedDuration !== "N/A") {
-          const minutes = parseInt(formattedDuration);
-          if (!isNaN(minutes)) {
-            const hours = Math.floor(minutes / 60);
-            const mins = minutes % 60;
-            formattedDuration =
-              hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
+        let durationInMinutes = null;
+
+        if (data.Runtime && data.Runtime !== "N/A") {
+          const parsed = parseInt(data.Runtime.replace("min", "").trim());
+          if (!isNaN(parsed)) {
+            durationInMinutes = parsed;
           }
         }
 
@@ -148,7 +151,7 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
         setFieldValue("title", data.Title || "");
         setFieldValue("year", data.Year || new Date().getFullYear().toString());
         setFieldValue("genre", matchedGenre);
-        setFieldValue("duration", formattedDuration);
+        setFieldValue("duration", durationInMinutes);
         setFieldValue("poster", data.Poster !== "N/A" ? data.Poster : null);
         setFieldValue("rating", imdbRating);
         setFieldValue("comment", data.Plot !== "N/A" ? data.Plot : "");
@@ -220,7 +223,7 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
   // ------------------- Handle Submit -------------------
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      const result = await addMovie({
+      const result = await createMovie({
         ...values,
         poster:
           values.poster || "https://via.placeholder.com/300x450?text=No+Poster",
@@ -248,17 +251,11 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
   // ------------------- Render Stars -------------------
   const renderStars = (rating, setFieldValue) => {
     const stars = [];
-    const fullStars = Math.floor(rating / 2); // Convert 10-point to 5-star
-
     for (let i = 1; i <= 5; i++) {
-      const starValue = i * 2; // 2, 4, 6, 8, 10
       stars.push(
-        <TouchableOpacity
-          key={i}
-          onPress={() => setFieldValue("rating", starValue)}
-        >
+        <TouchableOpacity key={i} onPress={() => setFieldValue("rating", i)}>
           <Ionicons
-            name={starValue <= rating ? "star" : "star-outline"}
+            name={i <= rating ? "star" : "star-outline"}
             size={32}
             color="#FFD700"
           />
@@ -502,7 +499,7 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                       )}
                     </View>
                     <View style={[styles.inputGroup, { flex: 1 }]}>
-                      <Text style={styles.label}>DURATION</Text>
+                      <Text style={styles.label}>DURATION (MINUTES)</Text>
                       <TextInput
                         style={[
                           styles.input,
@@ -510,28 +507,40 @@ export default function AddMovieModal({ visible, onClose, onSuccess }) {
                             errors.duration &&
                             styles.inputError,
                         ]}
-                        placeholder="2h 30min"
+                        placeholder="120"
                         placeholderTextColor="rgba(255,255,255,0.4)"
-                        value={values.duration}
-                        onChangeText={handleChange("duration")}
+                        value={
+                          values.duration ? values.duration.toString() : ""
+                        }
+                        onChangeText={(text) => {
+                          const num = parseInt(text);
+                          setFieldValue("duration", isNaN(num) ? null : num);
+                        }}
                         onBlur={handleBlur("duration")}
+                        keyboardType="numeric"
                       />
                       {touched.duration && errors.duration && (
                         <Text style={styles.errorText}>{errors.duration}</Text>
+                      )}
+                      {values.duration && (
+                        <Text style={styles.ratingHint}>
+                          {Math.floor(values.duration / 60)}h{" "}
+                          {values.duration % 60}min
+                        </Text>
                       )}
                     </View>
                   </View>
 
                   {/* ------------------- Rating ------------------- */}
                   <View style={styles.inputGroup}>
-                    <Text style={styles.label}>RATING (0-10)</Text>
+                    <Text style={styles.label}>RATING (0-5)</Text>
                     <View style={styles.starsRow}>
                       {renderStars(values.rating, setFieldValue)}
                     </View>
                     <Text style={styles.ratingHint}>
                       {values.rating > 0
-                        ? `${values.rating} / 10`
-                        : "Tap stars to rate (each star = 2 points)"}
+                        ? `${values.rating} / 5`
+                        : "Tap stars to rate (each star = 1 points)"}
                     </Text>
                   </View>
 

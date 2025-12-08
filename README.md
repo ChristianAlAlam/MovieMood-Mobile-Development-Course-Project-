@@ -10,10 +10,10 @@ A comprehensive React Native mobile application for tracking your movie watching
 ![Profile](assets/screenshots/profile.jpeg) -->
 
 <div style="display: flex; gap: 10px;">
-  <img src="assets/screenshots/homeScreen.jpeg" width="200">
-  <img src="assets/screenshots/watchlist.jpeg" width="200">
-  <img src="assets/screenshots/favorites.jpeg" width="200">
-  <img src="assets/screenshots/profile.jpeg" width="200">
+  <img src="frontend/assets/screenshots/homeScreen.jpegsets" width="200">
+  <img src="frontend/app.jsonassets/screenshots/watchlist.jpeg" width="200">
+  <img src="frontend/assets/screenshots/favorites.jpeg" width="200">
+  <img src="frontend/assets/screenshots/profile.jpeg" width="200">
 </div>
 
 ## Features

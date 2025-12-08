@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,18 +12,22 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import styles from '../styles/profileStyles';
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import styles from "../styles/profileStyles";
 
-import { getCurrentUser, logoutUser, updateUserProfile } from '../services/authService';
+import {
+  getCurrentUser,
+  logoutUser,
+  updateUserProfile,
+} from "../services/authService";
 
 export default function ProfileScreen({ navigation }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editedName, setEditedName] = useState('');
+  const [editedName, setEditedName] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -34,22 +38,23 @@ export default function ProfileScreen({ navigation }) {
     try {
       const userData = await getCurrentUser();
       setUser(userData);
-      setEditedName(userData?.name || '');
+      setEditedName(userData?.name || "");
       setLoading(false);
     } catch (error) {
-      console.error('Error loading user:', error);
+      console.error("Error loading user:", error);
       setLoading(false);
     }
   };
 
   const pickImage = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
-      if (status !== 'granted') {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== "granted") {
         Alert.alert(
-          'Permission Denied',
-          'Sorry, we need camera roll permissions to change your avatar!'
+          "Permission Denied",
+          "Sorry, we need camera roll permissions to change your avatar!"
         );
         return;
       }
@@ -65,19 +70,19 @@ export default function ProfileScreen({ navigation }) {
         await handleUpdateProfile({ avatar: result.assets[0].uri });
       }
     } catch (error) {
-      console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to pick image');
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to pick image");
     }
   };
 
   const takePhoto = async () => {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      
-      if (status !== 'granted') {
+
+      if (status !== "granted") {
         Alert.alert(
-          'Permission Denied',
-          'Sorry, we need camera permissions to take a photo!'
+          "Permission Denied",
+          "Sorry, we need camera permissions to take a photo!"
         );
         return;
       }
@@ -92,87 +97,83 @@ export default function ProfileScreen({ navigation }) {
         await handleUpdateProfile({ avatar: result.assets[0].uri });
       }
     } catch (error) {
-      console.error('Error taking photo:', error);
-      Alert.alert('Error', 'Failed to take photo');
+      console.error("Error taking photo:", error);
+      Alert.alert("Error", "Failed to take photo");
     }
   };
 
   const showAvatarOptions = () => {
-    Alert.alert(
-      'Change Avatar',
-      'Choose an option',
-      [
-        { text: 'Take Photo', onPress: takePhoto },
-        { text: 'Choose from Gallery', onPress: pickImage },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
+    Alert.alert("Change Avatar", "Choose an option", [
+      { text: "Take Photo", onPress: takePhoto },
+      { text: "Choose from Gallery", onPress: pickImage },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
   const handleUpdateProfile = async (updates) => {
     setSaving(true);
     try {
       const result = await updateUserProfile(updates);
-      
+
       if (result.success) {
         setUser(result.user);
-        Alert.alert('Success', 'Profile updated successfully!');
+        Alert.alert("Success", "Profile updated successfully!");
         setEditModalVisible(false);
       } else {
-        Alert.alert('Error', result.message);
+        Alert.alert("Error", result.message);
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Failed to update profile');
+      console.error("Error updating profile:", error);
+      Alert.alert("Error", "Failed to update profile");
     }
     setSaving(false);
   };
 
   const handleSaveName = async () => {
     if (editedName.trim().length < 2) {
-      Alert.alert('Invalid Name', 'Name must be at least 2 characters');
+      Alert.alert("Invalid Name", "Name must be at least 2 characters");
       return;
     }
     await handleUpdateProfile({ name: editedName });
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            await logoutUser();
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Landing' }],
-            });
-          },
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await logoutUser();
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Landing" }],
+          });
         },
-      ]
-    );
+      },
+    ]);
   };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#D4AF37" />
+        <ActivityIndicator size="large" color="#8B5CF6" />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />      
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <StatusBar
+        barStyle="default"
+        backgroundColor="transparent"
+        translucent={true}
+      />
       <LinearGradient
-        colors={['#8b80a0', '#090909', '#000000', '#000000']}
+        colors={["#8b80a0", "#090909", "#000000", "#000000"]}
         locations={[0, 0.4, 0.5, 1]}
-        start={{x:1, y:0}}
-        end={{x:0, y:1}}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={styles.gradient}
       >
         <View style={styles.spotlight} />
@@ -188,7 +189,7 @@ export default function ProfileScreen({ navigation }) {
               <Ionicons name="chevron-back" size={22} color="#fff" />
             </TouchableOpacity>
             <Text style={styles.topBarTitle}>My account</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+            <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
               <Ionicons name="settings-outline" size={22} color="#fff" />
             </TouchableOpacity>
           </View>
@@ -197,7 +198,10 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.profileCenter}>
             <TouchableOpacity onPress={showAvatarOptions} activeOpacity={0.8}>
               {user?.avatar ? (
-                <Image source={{ uri: user.avatar }} style={styles.profileAvatar} />
+                <Image
+                  source={{ uri: user.avatar }}
+                  style={styles.profileAvatar}
+                />
               ) : (
                 <View style={styles.profileAvatarPlaceholder}>
                   <Ionicons name="person" size={60} color="#fff" />
@@ -241,7 +245,9 @@ export default function ProfileScreen({ navigation }) {
 
             <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
               <Ionicons name="log-out-outline" size={22} color="#FF6B6B" />
-              <Text style={[styles.menuText, { color: '#FF6B6B' }]}>Sign out</Text>
+              <Text style={[styles.menuText, { color: "#FF6B6B" }]}>
+                Sign out
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -269,7 +275,10 @@ export default function ProfileScreen({ navigation }) {
             <View style={styles.modalAvatarSection}>
               <TouchableOpacity onPress={showAvatarOptions} activeOpacity={0.8}>
                 {user?.avatar ? (
-                  <Image source={{ uri: user.avatar }} style={styles.modalAvatar} />
+                  <Image
+                    source={{ uri: user.avatar }}
+                    style={styles.modalAvatar}
+                  />
                 ) : (
                   <View style={styles.modalAvatarPlaceholder}>
                     <Ionicons name="person" size={50} color="#fff" />
@@ -307,7 +316,7 @@ export default function ProfileScreen({ navigation }) {
               disabled={saving}
             >
               {saving ? (
-                <ActivityIndicator color="#000" />
+                <ActivityIndicator color="#8B5CF6" />
               ) : (
                 <Text style={styles.saveButtonText}>Save Changes</Text>
               )}

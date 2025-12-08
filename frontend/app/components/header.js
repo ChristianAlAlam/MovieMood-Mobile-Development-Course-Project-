@@ -1,11 +1,11 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { getCurrentUser } from '../services/authService';
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { getCurrentUser } from "../services/authService";
 
 /**
  * Header Component
- * 
+ *
  * Unified elegant header used across screens.
  * Includes:
  * - Avatar (left)
@@ -15,32 +15,30 @@ import { getCurrentUser } from '../services/authService';
 const Header = ({
   // userAvatar,
   title,
-  ionIconName,          // Default icon like in Favorites
+  ionIconName, // Default icon like in Favorites
   materialCommunityIconName,
   iconColor,
-  itemCount,               // For showing "x movies"
+  itemCount, // For showing "x movies"
   onProfilePress,
   isHome,
 }) => {
-
   const [user, setUser] = useState(null);
 
   const handleCurrentUser = async () => {
     try {
-          const u = await getCurrentUser();
-          setUser(u);
+      const u = await getCurrentUser();
+      setUser(u);
     } catch (error) {
-          console.error('Load Current User error:', error);
+      console.error("Load Current User error:", error);
     }
   };
-  
+
   useEffect(() => {
     handleCurrentUser();
   }, []);
 
   return (
     <View style={styles.container}>
-      
       {/* Left: Avatar */}
       <TouchableOpacity
         style={styles.avatarContainer}
@@ -58,67 +56,68 @@ const Header = ({
 
       {/* Center: Icon + Title */}
       <View style={styles.centerContainer}>
-        {/* {ionIconName ? <Ionicons name={iconName} size={26} color={iconColor} style={{ marginRight: 8 }} />
-        :
-        <MaterialCommunityIcons name={materialCommunityIconName} size={26} color={iconColor} style={{marginRight: 8}}/>} */}
         <Text style={styles.headerTitle}>{title}</Text>
       </View>
 
       {/* Right: Movie Count */}
-      {isHome ? <Text style={styles.headerCount}>        </Text> : <Text style={styles.headerCount}>{itemCount} movies</Text>}
+      {isHome ? (
+        <Text style={styles.headerCount}> </Text>
+      ) : (
+        <Text style={styles.headerCount}>{itemCount} movies</Text>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
 
   avatarContainer: {
     width: 45,
     height: 45,
     borderRadius: 22.5,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: "#FFFFFF",
   },
 
   avatar: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
 
   avatarPlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(27, 47, 79, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(27, 47, 79, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   centerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
   },
 
   headerTitle: {
     fontSize: 22,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
 
   headerCount: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontWeight: '500',
+    color: "rgba(255, 255, 255, 0.6)",
+    fontWeight: "500",
   },
 });
 

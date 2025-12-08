@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
@@ -9,55 +9,32 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import styles from '../styles/continueWatchingStyles';
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import styles from "../styles/continueWatchingStyles";
 
-import Header from '../components/header';
-import FiltersModal from '../modal/filtersModal';
-import { applySearchAndFilters } from '../services/filterService';
-import { getMovies } from '../services/movieService';
-
-/**
- * Helper function to calculate time left
- */
-const calculateTimeLeft = (duration, progress) => {
-  if (!duration || !progress) return 'Continue watching';
-  
-  // Parse duration (e.g., "2h 30min" or "1h 58min")
-  const matches = duration.match(/(\d+)h?\s*(\d+)?m?/i);
-  if (!matches) return 'Continue watching';
-  
-  const hours = parseInt(matches[1]) || 0;
-  const minutes = parseInt(matches[2]) || 0;
-  const totalMinutes = hours * 60 + minutes;
-  
-  const remainingMinutes = Math.round(totalMinutes * (1 - progress));
-  
-  if (remainingMinutes < 1) return 'Almost done';
-  if (remainingMinutes < 60) return `${remainingMinutes} min left`;
-  
-  const remHours = Math.floor(remainingMinutes / 60);
-  const remMins = remainingMinutes % 60;
-  return remMins > 0 ? `${remHours}h ${remMins}m left` : `${remHours}h left`;
-};
+import Header from "../components/header";
+import FiltersModal from "../modal/filtersModal";
+import { applySearchAndFilters } from "../services/filterService";
+import { getMovies } from "../services/movieService";
+import { calculateTimeLeft } from "../utils/timeUtils";
 
 export default function ContinueWatchingScreen({ navigation }) {
   const [allInProgress, setAllInProgress] = useState([]);
   const [filteredContinueWatching, setFilteredContinueWatching] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filtersVisible, setFiltersVisible] = useState(false);
-  
+
   // Filter state
   const [activeFilters, setActiveFilters] = useState({
     genres: [],
     years: [],
     ratings: [],
     ratingRanges: [],
-    sort: 'newest',
+    sort: "newest",
   });
 
   useEffect(() => {
@@ -65,7 +42,7 @@ export default function ContinueWatchingScreen({ navigation }) {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
+    const unsubscribe = navigation.addListener("focus", () => {
       loadInProgressMovies();
     });
     return unsubscribe;
@@ -79,7 +56,7 @@ export default function ContinueWatchingScreen({ navigation }) {
       applyFiltersToMovies(inProgress, searchQuery, activeFilters);
       setLoading(false);
     } catch (error) {
-      console.error('Load in progress movies error:', error);
+      console.error("Load in progress movies error:", error);
       setLoading(false);
     }
   };
@@ -92,7 +69,7 @@ export default function ContinueWatchingScreen({ navigation }) {
   const onRefresh = async () => {
     setRefreshing(true);
     await loadInProgressMovies();
-    setSearchQuery('');
+    setSearchQuery("");
     setRefreshing(false);
   };
 
@@ -116,7 +93,7 @@ export default function ContinueWatchingScreen({ navigation }) {
   };
 
   const handleMoviePress = (movie) => {
-    navigation.navigate('MovieDetails', { movie });
+    navigation.navigate("MovieDetails", { movie });
   };
 
   const renderMovieItem = ({ item }) => (
@@ -128,7 +105,7 @@ export default function ContinueWatchingScreen({ navigation }) {
       <Image source={{ uri: item.poster }} style={styles.moviePoster} />
 
       <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.9)']}
+        colors={["transparent", "rgba(0,0,0,0.9)"]}
         style={styles.movieGradient}
       >
         <View style={styles.movieInfo}>
@@ -151,7 +128,10 @@ export default function ContinueWatchingScreen({ navigation }) {
       {item.watchProgress > 0 && (
         <View style={styles.progressBarContainer}>
           <View
-            style={[styles.progressBar, { width: `${item.watchProgress * 100}%` }]}
+            style={[
+              styles.progressBar,
+              { width: `${item.watchProgress * 100}%` },
+            ]}
           />
         </View>
       )}
@@ -162,7 +142,11 @@ export default function ContinueWatchingScreen({ navigation }) {
     <View style={styles.emptyContainer}>
       {searchQuery || getActiveFiltersCount() > 0 ? (
         <>
-          <Ionicons name="search-outline" size={80} color="rgba(255, 255, 255, 0.3)" />
+          <Ionicons
+            name="search-outline"
+            size={80}
+            color="rgba(255, 255, 255, 0.3)"
+          />
           <Text style={styles.emptyTitle}>No Results Found</Text>
           <Text style={styles.emptySubtitle}>
             Try adjusting your filters or search terms
@@ -176,15 +160,15 @@ export default function ContinueWatchingScreen({ navigation }) {
                   years: [],
                   ratings: [],
                   ratingRanges: [],
-                  sort: 'newest',
+                  sort: "newest",
                 });
-                setSearchQuery('');
-                applyFiltersToMovies(allInProgress, '', {
+                setSearchQuery("");
+                applyFiltersToMovies(allInProgress, "", {
                   genres: [],
                   years: [],
                   ratings: [],
                   ratingRanges: [],
-                  sort: 'newest',
+                  sort: "newest",
                 });
               }}
             >
@@ -205,7 +189,7 @@ export default function ContinueWatchingScreen({ navigation }) {
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
-            onPress={() => navigation.navigate('Watchlist')}
+            onPress={() => navigation.navigate("Watchlist")}
           >
             <Text style={styles.emptyButtonText}>Add More Movies</Text>
           </TouchableOpacity>
@@ -215,16 +199,20 @@ export default function ContinueWatchingScreen({ navigation }) {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <StatusBar
+        barStyle="default"
+        backgroundColor="transparent"
+        translucent={true}
+      />
 
-      <LinearGradient colors={['#0A0A0F', '#1A1A24']} style={styles.gradient}>
+      <LinearGradient colors={["#0A0A0F", "#1A1A24"]} style={styles.gradient}>
         <Header
           title="Continue Watching"
           materialCommunityIconName="movie-filter-outline"
           iconColor="#FFFFFF"
           itemCount={filteredContinueWatching.length}
-          onProfilePress={() => navigation.navigate('Profile')}
+          onProfilePress={() => navigation.navigate("Profile")}
         />
 
         {/* Search Bar */}
@@ -238,26 +226,35 @@ export default function ContinueWatchingScreen({ navigation }) {
               value={searchQuery}
               onChangeText={handleSearch}
             />
-            {searchQuery !== '' && (
-              <TouchableOpacity onPress={() => handleSearch('')}>
-                <Ionicons name="close-circle" size={20} color="rgba(255,255,255,0.6)" />
+            {searchQuery !== "" && (
+              <TouchableOpacity onPress={() => handleSearch("")}>
+                <Ionicons
+                  name="close-circle"
+                  size={20}
+                  color="rgba(255,255,255,0.6)"
+                />
               </TouchableOpacity>
             )}
           </View>
-          
+
           {/* Header with Title and Actions */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Your Ongoing List</Text>
-            
+
             <View style={styles.headerActions}>
               <TouchableOpacity
-                style={[styles.iconButton, getActiveFiltersCount() > 0 && styles.iconButtonActive]}
+                style={[
+                  styles.iconButton,
+                  getActiveFiltersCount() > 0 && styles.iconButtonActive,
+                ]}
                 onPress={() => setFiltersVisible(true)}
               >
                 <Ionicons name="options-outline" size={22} color="#fff" />
                 {getActiveFiltersCount() > 0 && (
                   <View style={styles.filterBadge}>
-                    <Text style={styles.filterBadgeText}>{getActiveFiltersCount()}</Text>
+                    <Text style={styles.filterBadgeText}>
+                      {getActiveFiltersCount()}
+                    </Text>
                   </View>
                 )}
               </TouchableOpacity>

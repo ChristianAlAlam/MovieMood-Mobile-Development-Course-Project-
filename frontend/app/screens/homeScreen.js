@@ -16,6 +16,7 @@ import Header from "../components/header";
 import { getCurrentUser } from "../services/authService";
 import { getFavoriteMovies, getMovies } from "../services/movieService";
 import styles from "../styles/homeStyles";
+import { calculateTimeLeft } from "../utils/timeUtils";
 
 export default function HomeScreen({ navigation }) {
   const [user, setUser] = useState(null);
@@ -59,34 +60,10 @@ export default function HomeScreen({ navigation }) {
     try {
       const movie = await getMovies();
       const inProgress = movie.filter((m) => m && !m.isCompleted);
-      const moviesWithProgress = inProgress.map((m) => ({
-        ...m,
-        watchProgress: m.watchProgress || 0.3,
-        timeLeft:
-          m.timeLeft || calculateTimeLeft(m.duration, m.watchProgress || 0.3),
-      }));
-      setContinueWatching(moviesWithProgress);
+      setContinueWatching(inProgress);
     } catch (error) {
       console.log("Load In Progress error", error);
     }
-  };
-
-  const calculateTimeLeft = (duration, progress) => {
-    if (!duration) return "Continue watching";
-    const matches = duration.match(/(\d+)h?\s*(\d+)?m?/i);
-    if (!matches) return "Continue watching";
-
-    const hours = parseInt(matches[1]) || 0;
-    const minutes = parseInt(matches[2]) || 0;
-    const totalMinutes = hours * 60 + minutes;
-    const remainingMinutes = Math.round(totalMinutes * (1 - progress));
-
-    if (remainingMinutes < 1) return "Almost done";
-    if (remainingMinutes < 60) return `${remainingMinutes} min left`;
-
-    const remHours = Math.floor(remainingMinutes / 60);
-    const remMins = remainingMinutes % 60;
-    return remMins > 0 ? `${remHours}h ${remMins}m left` : `${remHours}h left`;
   };
 
   const onRefresh = async () => {
@@ -149,7 +126,10 @@ export default function HomeScreen({ navigation }) {
                   >
                     <View style={styles.continueWatchingInfo}>
                       <Text style={styles.continueTimeLeft}>
-                        {movie.timeLeft || "Continue"}
+                        {calculateTimeLeft(
+                          movie.duration,
+                          movie.watchProgress || 0
+                        )}
                       </Text>
                       <Text style={styles.continueTitle} numberOfLines={1}>
                         {movie.title}
@@ -171,7 +151,7 @@ export default function HomeScreen({ navigation }) {
               {title !== "Continue watching" && (
                 <View style={styles.ratingBadge}>
                   <Ionicons name="star" size={12} color="#FFD700" />
-                  <Text style={styles.ratingText}>{movie.rating}</Text>
+                  <Text style={styles.ratingText}>{movie.rating || 0}</Text>
                 </View>
               )}
             </TouchableOpacity>

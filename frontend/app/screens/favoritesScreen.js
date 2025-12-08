@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
@@ -9,31 +9,31 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Header from '../components/header';
-import FiltersModal from '../modal/filtersModal';
-import styles from '../styles/favoriteStyles';
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Header from "../components/header";
+import FiltersModal from "../modal/filtersModal";
+import styles from "../styles/favoriteStyles";
 
-import { applySearchAndFilters } from '../services/filterService';
-import { getFavoriteMovies, toggleFavorite } from '../services/movieService';
+import { applySearchAndFilters } from "../services/filterService";
+import { getFavoriteMovies, toggleFavorite } from "../services/movieService";
 
 export default function FavoritesScreen({ navigation }) {
   const [allFavorites, setAllFavorites] = useState([]);
   const [filteredFavorites, setFilteredFavorites] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filtersVisible, setFiltersVisible] = useState(false);
-  
+
   // Filter state
   const [activeFilters, setActiveFilters] = useState({
     genres: [],
     years: [],
     ratings: [],
     ratingRanges: [],
-    sort: 'newest',
+    sort: "newest",
   });
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function FavoritesScreen({ navigation }) {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
+    const unsubscribe = navigation.addListener("focus", () => {
       loadFavorites();
     });
     return unsubscribe;
@@ -54,7 +54,7 @@ export default function FavoritesScreen({ navigation }) {
       applyFiltersToMovies(favMovies, searchQuery, activeFilters);
       setLoading(false);
     } catch (error) {
-      console.error('Load favorites error:', error);
+      console.error("Load favorites error:", error);
       setLoading(false);
     }
   };
@@ -67,7 +67,7 @@ export default function FavoritesScreen({ navigation }) {
   const onRefresh = async () => {
     setRefreshing(true);
     await loadFavorites();
-    setSearchQuery('');
+    setSearchQuery("");
     setRefreshing(false);
   };
 
@@ -102,7 +102,7 @@ export default function FavoritesScreen({ navigation }) {
   };
 
   const handleMoviePress = (movie) => {
-    navigation.navigate('MovieDetails', { movie });
+    navigation.navigate("MovieDetails", { movie });
   };
 
   const renderMovieItem = ({ item }) => (
@@ -136,7 +136,11 @@ export default function FavoritesScreen({ navigation }) {
     <View style={styles.emptyContainer}>
       {searchQuery || getActiveFiltersCount() > 0 ? (
         <>
-          <Ionicons name="search-outline" size={80} color="rgba(255, 255, 255, 0.3)" />
+          <Ionicons
+            name="search-outline"
+            size={80}
+            color="rgba(255, 255, 255, 0.3)"
+          />
           <Text style={styles.emptyTitle}>No Results Found</Text>
           <Text style={styles.emptySubtitle}>
             Try adjusting your filters or search terms
@@ -150,15 +154,15 @@ export default function FavoritesScreen({ navigation }) {
                   years: [],
                   ratings: [],
                   ratingRanges: [],
-                  sort: 'newest',
+                  sort: "newest",
                 });
-                setSearchQuery('');
-                applyFiltersToMovies(allFavorites, '', {
+                setSearchQuery("");
+                applyFiltersToMovies(allFavorites, "", {
                   genres: [],
                   years: [],
                   ratings: [],
                   ratingRanges: [],
-                  sort: 'newest',
+                  sort: "newest",
                 });
               }}
             >
@@ -168,14 +172,18 @@ export default function FavoritesScreen({ navigation }) {
         </>
       ) : (
         <>
-          <Ionicons name="heart-outline" size={80} color="rgba(255, 255, 255, 0.3)" />
+          <Ionicons
+            name="heart-outline"
+            size={80}
+            color="rgba(255, 255, 255, 0.3)"
+          />
           <Text style={styles.emptyTitle}>No Favorites Yet</Text>
           <Text style={styles.emptySubtitle}>
             Mark movies as favorite to see them here
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
-            onPress={() => navigation.navigate('Watchlist')}
+            onPress={() => navigation.navigate("Watchlist")}
           >
             <Text style={styles.emptyButtonText}>Browse Movies</Text>
           </TouchableOpacity>
@@ -185,16 +193,20 @@ export default function FavoritesScreen({ navigation }) {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <StatusBar
+        barStyle="default"
+        backgroundColor="transparent"
+        translucent={true}
+      />
 
-      <LinearGradient colors={['#0A0A0F', '#1A1A24']} style={styles.gradient}>
+      <LinearGradient colors={["#0A0A0F", "#1A1A24"]} style={styles.gradient}>
         <Header
           title="My Favorites"
           iconName="heart"
           iconColor="#FF6B9D"
           itemCount={filteredFavorites.length}
-          onProfilePress={() => navigation.navigate('Profile')}
+          onProfilePress={() => navigation.navigate("Profile")}
         />
 
         {/* Search Bar */}
@@ -208,30 +220,39 @@ export default function FavoritesScreen({ navigation }) {
               value={searchQuery}
               onChangeText={handleSearch}
             />
-            {searchQuery !== '' && (
-              <TouchableOpacity onPress={() => handleSearch('')}>
-                <Ionicons name="close-circle" size={20} color="rgba(255,255,255,0.6)" />
+            {searchQuery !== "" && (
+              <TouchableOpacity onPress={() => handleSearch("")}>
+                <Ionicons
+                  name="close-circle"
+                  size={20}
+                  color="rgba(255,255,255,0.6)"
+                />
               </TouchableOpacity>
             )}
           </View>
-          
-            {/* Header with Title and Actions */}
+
+          {/* Header with Title and Actions */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Your LoveList</Text>
-            
+
             <View style={styles.headerActions}>
               <TouchableOpacity
-                style={[styles.iconButton, getActiveFiltersCount() > 0 && styles.iconButtonActive]}
+                style={[
+                  styles.iconButton,
+                  getActiveFiltersCount() > 0 && styles.iconButtonActive,
+                ]}
                 onPress={() => setFiltersVisible(true)}
               >
                 <Ionicons name="options-outline" size={22} color="#fff" />
                 {getActiveFiltersCount() > 0 && (
                   <View style={styles.filterBadge}>
-                    <Text style={styles.filterBadgeText}>{getActiveFiltersCount()}</Text>
+                    <Text style={styles.filterBadgeText}>
+                      {getActiveFiltersCount()}
+                    </Text>
                   </View>
                 )}
               </TouchableOpacity>
-              
+
               {/* <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
@@ -267,7 +288,7 @@ export default function FavoritesScreen({ navigation }) {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#D4AF37"
+              tintColor="#8B5CF6"
             />
           }
         />

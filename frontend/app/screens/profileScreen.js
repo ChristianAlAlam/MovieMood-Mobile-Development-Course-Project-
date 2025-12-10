@@ -64,10 +64,11 @@ export default function ProfileScreen({ navigation }) {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
+        base64: true,
       });
 
       if (!result.canceled) {
-        await handleUpdateProfile({ avatar: result.assets[0].uri });
+        await handleUpdateProfile({ avatar: result.assets[0] });
       }
     } catch (error) {
       console.error("Error picking image:", error);
@@ -91,10 +92,11 @@ export default function ProfileScreen({ navigation }) {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
+        base64: true,
       });
 
       if (!result.canceled) {
-        await handleUpdateProfile({ avatar: result.assets[0].uri });
+        await handleUpdateProfile({ avatar: result.assets[0] });
       }
     } catch (error) {
       console.error("Error taking photo:", error);

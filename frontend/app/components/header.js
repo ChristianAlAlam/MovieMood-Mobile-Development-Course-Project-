@@ -13,12 +13,11 @@ import { getCurrentUser } from "../services/authService";
  * - Item count (right)
  */
 const Header = ({
-  // userAvatar,
   title,
-  ionIconName, // Default icon like in Favorites
+  ionIconName,
   materialCommunityIconName,
   iconColor,
-  itemCount, // For showing "x movies"
+  itemCount,
   onProfilePress,
   isHome,
 }) => {
@@ -45,7 +44,7 @@ const Header = ({
         onPress={onProfilePress}
         activeOpacity={0.7}
       >
-        {user ? (
+        {user?.avatar ? (
           <Image source={{ uri: user.avatar }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarPlaceholder}>

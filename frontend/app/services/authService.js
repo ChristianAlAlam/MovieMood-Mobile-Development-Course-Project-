@@ -1,5 +1,6 @@
 import * as SecureStore from "expo-secure-store";
 import api from "./api";
+import { uploadAvatar, deleteAvatar } from "../utils/uploadAvatar";
 
 /**
  * Authentication Service - API Version
@@ -189,25 +190,72 @@ export const getUserProfile = async () => {
 
 /**
  * Update user profile
+ * Handles Supabase avatar upload if avatar is a local file
  */
 
 export const updateUserProfile = async (updates) => {
   try {
-    const response = await api.put("/auth/profile", updates);
+    const user = await getCurrentUser();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    let avatarToUpload = updates.avatar;
+
+    // If ImagePicker passed us an array, use the first item in the array
+    if (Array.isArray(updates.avatar) && updates.avatar.length > 0) {
+      avatarToUpload = updates.avatar[0];
+    }
+
+    let avatarUrl = avatarToUpload ? avatarToUpload.uri : undefined;
+
+    // If avatar is a local file URI, upload it to Supabase first
+    if (
+      avatarToUpload &&
+      (avatarToUpload.uri.startsWith("file://") ||
+        avatarToUpload.uri.startsWith("content://"))
+    ) {
+      console.log("📤 Uploading new avatar to Supabase...");
+
+      try {
+        // Upload new avatar to Supabase
+        avatarUrl = await uploadAvatar(user.id, avatarToUpload);
+        console.log("✅ Avatar uploaded successfully:", avatarUrl);
+
+        // Delete old avatar from Supabase (optional, keeps storage clean)
+        if (user.avatar && user.avatar.includes("supabase.co")) {
+          console.log("🗑️ Deleting old avatar...");
+          await deleteAvatar(user.avatar);
+        }
+      } catch (uploadError) {
+        console.error("❌ Avatar upload failed:", uploadError);
+        throw new Error("Failed to upload avatar. Please try again.");
+      }
+    } else if (updates.name) {
+      // If we are updating the name, we keep the current avatar url
+      avatarUrl = user.avatar;
+    }
+
+    // Send update to backend with Supabase URL (or other updates)
+    const response = await api.put("/auth/profile", {
+      ...updates,
+      avatar: avatarUrl, // This is now the Supabase URL
+    });
 
     if (response.data.success) {
-      const user = response.data.data;
+      const updatedUser = response.data.data;
 
-      // Updated local storage
+      // Update local storage with fresh data
       await SecureStore.setItemAsync(
         STORAGE_KEYS.USER_DATA,
-        JSON.stringify(user)
+        JSON.stringify(updatedUser)
       );
 
       return {
         success: true,
         message: "Profile updated successfully",
-        user,
+        user: updatedUser,
       };
     }
 
@@ -216,10 +264,13 @@ export const updateUserProfile = async (updates) => {
       message: response.data.message || "Failed to update profile",
     };
   } catch (error) {
-    console.error("Update profile error", error);
+    console.error("Update profile error:", error);
     return {
       success: false,
-      message: error.response?.data?.message || "Failed to update profile",
+      message:
+        error.message ||
+        error.response?.data?.message ||
+        "Failed to update profile",
     };
   }
 };
@@ -230,6 +281,18 @@ export const updateUserProfile = async (updates) => {
 
 export const deleteUserAccount = async () => {
   try {
+    const user = await getCurrentUser();
+
+    // Delete avatar from Supabase before deleting account
+    if (user?.avatar && user.avatar.includes("supabase.co")) {
+      try {
+        await deleteAvatar(user.avatar);
+      } catch (err) {
+        console.error("Failed to delete avatar:", err);
+        // Continue with account deletion even if avatar deletion fails
+      }
+    }
+
     const response = await api.delete("/auth/account");
 
     if (response.data.success) {
@@ -239,7 +302,7 @@ export const deleteUserAccount = async () => {
 
       return {
         success: true,
-        message: "Account deleted succesfully",
+        message: "Account deleted successfully",
       };
     }
 

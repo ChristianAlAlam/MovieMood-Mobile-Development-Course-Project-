@@ -42,7 +42,7 @@ export const authService = {
         name, // User's name
         email, // User's email
         password: hashedPassword, // Store the hashed password for security
-        avatar, // Optional avatar URL
+        avatar: avatar || null, // Store avatar URL
       },
       select: {
         // Specify which fields to return after creating the user
@@ -113,7 +113,7 @@ export const authService = {
   },
 
   // Update user
-  async udpateUser(userId, updateData) {
+  async updateUser(userId, updateData) {
     const { name, email, password, avatar } = updateData;
 
     const data = {};

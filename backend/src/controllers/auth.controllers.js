@@ -63,7 +63,7 @@ export const authController = {
   // Update user
   async updateProfile(req, res) {
     try {
-      const user = await authService.udpateUser(req.userId, req.body);
+      const user = await authService.updateUser(req.userId, req.body);
       res.json({
         success: true,
         message: "Profile updated successfully",
